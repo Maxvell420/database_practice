@@ -1,6 +1,6 @@
 from .allocator import Allocator
 from .secrets import Secrets
-from psycopg2 import connect as psycopg2Connect
+from psycopg2.extensions import connection
 
 class Context:
 
@@ -12,5 +12,5 @@ class Context:
         return self.allocator.secrets
     
     @property
-    def pgDb(self) -> psycopg2Connect:
+    def pgDb(self) -> connection:
         return self.allocator.pgDb

@@ -1,6 +1,7 @@
 from os import getenv
 from dotenv import load_dotenv
-from psycopg2 import connect as psycopg2Connect
+from psycopg2 import connect
+from psycopg2.extensions import connection
 
 from .parts.pg import PGParts
 from .secrets import Secrets
@@ -11,7 +12,7 @@ load_dotenv()
 class Allocator:
     def __init__(self):
         self._secrets: Secrets | None = None
-        self._pg_db: psycopg2Connect | None = None
+        self._pg_db: connection | None = None
 
     @property
     def secrets(self) -> Secrets:
@@ -20,7 +21,7 @@ class Allocator:
         return self._secrets
 
     @property
-    def pgDb(self) -> psycopg2Connect:
+    def pgDb(self) -> connection:
         if self._pg_db is None:
             self._pg_db = self.loadPgDb()
         return self._pg_db
@@ -31,21 +32,21 @@ class Allocator:
     def loadPgParts(self) -> PGParts:
         # подумать в будущем как лучше сделать это
         return PGParts(
-            host=getenv('DB1_HOST'),
-            port=getenv('DB1_PORT'),
-            user=getenv('DB1_USER'),
-            password=getenv('DB1_PASSWORD'),
-            database=getenv('DB1_DATABASE')
+            host=self.getInvVariable('DB1_HOST'),
+            port=int(self.getInvVariable('DB1_PORT')),
+            user=self.getInvVariable('DB1_USER'),
+            password=self.getInvVariable('DB1_PASSWORD'),
+            database=self.getInvVariable('DB1_DATABASE')
         )
 
     def loadVkParts(self) -> VKParts:
         return VKParts(
-            token=getenv('VK_TOKEN')
+            token=self.getInvVariable('VK_TOKEN')
         )
 
-    def loadPgDb(self) -> psycopg2Connect:
+    def loadPgDb(self) -> connection:
         secrets = self.secrets
-        return psycopg2Connect(
+        return connect(
             host=secrets.pg.host,
             port=secrets.pg.port,
             user=secrets.pg.user,
@@ -54,11 +55,11 @@ class Allocator:
         )
 
     def getInvVariable(self, variable: str) -> str:
-        variable = getenv(variable)
+        envVariable = getenv(variable)
 
-        if variable is None:
+        if envVariable is None:
             raise ValueError(f"Variable {variable} is not set")
 
-        return variable
+        return envVariable
 
 
