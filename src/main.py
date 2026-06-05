@@ -10,13 +10,6 @@ app = FastAPI()
 
 @app.get("/users")
 def read_item():
-    users = getUser()
-    return {"users": users}
-
-def getUser():
-    db = context.pgDb
-    cursor = db.cursor()
-    cursor.execute("SELECT * FROM users")
-    users = cursor.fetchall()
-    cursor.close()
-    return users
+    client = Client(context.secrets.vk.token, context.secrets.vk.group_id)
+    response = client.getLognPollServer()
+    return response

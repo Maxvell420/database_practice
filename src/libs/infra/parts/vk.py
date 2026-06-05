@@ -1,3 +1,4 @@
 class VKParts:
-    def __init__(self, token: str):
+    def __init__(self, token: str, group_id: int):
         self.token = token
+        self.group_id = group_id

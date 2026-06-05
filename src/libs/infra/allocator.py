@@ -41,7 +41,8 @@ class Allocator:
 
     def loadVkParts(self) -> VKParts:
         return VKParts(
-            token=self.getInvVariable('VK_TOKEN')
+            token=self.getInvVariable('VK_TOKEN'),
+            group_id=int(self.getInvVariable('GROUP_ID'))
         )
 
     def loadPgDb(self) -> connection:
