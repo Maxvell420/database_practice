@@ -3,11 +3,11 @@ services:
         container_name: pgsql
         image: 'postgres'
         ports:
-            - '${FORWARD_DB_PORT:-5432}:5432'
+            - '${DB1_PORT:-5432}:5432'
         environment:
-            PGPASSWORD: '${DB_PASSWORD:-secret}'
-            POSTGRES_DB: '${DB_DATABASE}'
-            POSTGRES_USER: '${DB_USERNAME}'
-            POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
+            PGPASSWORD: '${DB1_PASSWORD:-secret}'
+            POSTGRES_DB: '${DB1_DATABASE}'
+            POSTGRES_USER: '${DB1_USER}'
+            POSTGRES_PASSWORD: '${DB1_PASSWORD:-secret}'
         volumes:
             - ./.docker/postgresql/data:/var/lib/postgresql
