@@ -1,6 +1,7 @@
 import requests
-# Остальное содержимое файла должно быть добавлено здесь, если оно было
-
+from .responses.response import Response
+from .enums.result import Result
+from .responses.LongPollServerResponse import LongPollServerResponse
 class Client:
 
     API_URL = 'https://api.vk.com/method/'
@@ -9,8 +10,31 @@ class Client:
     def __init__(self, token: str, group_id: int):
         self.token = token
         self.group_id = group_id
+        # long poll server data может быть хранить в другом месте
+        self._server :str | None = None
+        self._key :str | None = None
+        self._ts :str | None = None
 
-    def getLognPollServer(self):
+    @property
+    def server(self) -> str | None:
+
+        if self._server is None:
+            self._server = self.getLognPollServer().server
+        return self._server
+
+    @property
+    def key(self) -> str | None:
+        if self._key is None:
+            self._key = self.getLognPollServer().key
+        return self._key
+
+    @property
+    def ts(self) -> str | None:
+        if self._ts is None:
+            self._ts = self.getLognPollServer().ts
+        return self._ts
+
+    def getLognPollServer(self) -> LongPollServerResponse:
         headers = {
             'Authorization': f'Bearer {self.token}'
         }
@@ -18,13 +42,35 @@ class Client:
             'group_id': self.group_id,
             'v': self.VK_API_VERSION
         }
-        response = self.sendPostRequest(self.API_URL + 'messages.getLongPollServer', headers, data=data)
+
+        response = self.sendPostRequest(self.API_URL + 'groups.getLongPollServer', headers, data=data)
+
+        if(not response.isOk()):
+            raise Exception(response.data)
+        return response.getLongPollServerResponse()
+
+    def sendGetRequest(self, url: str, headers: dict, params: dict) -> Response:
+        response = requests.get(url, headers=headers, params=params)
+
+        status = Result.SUCCESS
+        if response.status_code != 200:
+            status = Result.ERROR
+        return Response(status, response.json())
+
+    def getUpdates(self) -> Response:
+        server = self.server
+        key = self.key
+        ts = self.ts
+        url = f"{server}?act=a_check&key={key}&ts={ts}&wait=25"
+        response = self.sendGetRequest(url, {}, {})
+
+        if(response.isOk()):
+            self._ts = response.data['ts']
         return response
 
-    def sendGetRequest(self, url: str, headers: dict, params: dict):
-        response = requests.get(url, headers=headers, params=params)
-        return response.text
-
-    def sendPostRequest(self, url: str, headers: dict, data: dict):
+    def sendPostRequest(self, url: str, headers: dict, data: dict) -> Response:
         response = requests.post(url, headers=headers, data=data)
-        return response.text
+        status = Result.SUCCESS
+        if response.status_code != 200:
+            status = Result.ERROR
+        return Response(status, response.json())

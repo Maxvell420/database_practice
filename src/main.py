@@ -11,5 +11,5 @@ app = FastAPI()
 @app.get("/users")
 def read_item():
     client = Client(context.secrets.vk.token, context.secrets.vk.group_id)
-    response = client.getLognPollServer()
+    response = client.getUpdates()
     return response
