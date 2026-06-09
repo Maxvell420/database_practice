@@ -28,3 +28,4 @@ Thumbs.db
 .docker/postgresql/data
 .venv
 __pycache__/
+/logs
