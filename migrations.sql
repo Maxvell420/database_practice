@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS geohashes(
     id SERIAL PRIMARY KEY,
-    geohash char(5) not null
+    geohash char(5) not null unique
 );
 
 CREATE TABLE IF NOT EXISTS nasapower_geohashes_data(

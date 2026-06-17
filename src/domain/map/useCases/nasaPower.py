@@ -7,9 +7,15 @@ class NasaPower:
         self.repository = repository
         self.nasapowerClient = nasapowerClient
 
-    def getByGeohashAndDate(self, latitude: float, longitude: float,time:float) -> list:
+    def getByGeohashAndDate(self, latitude: float, longitude: float,time:float):
         geohash = pygeohash.encode(latitude, longitude, 5)
-        data = self.repository.getByGeohashAndDate(geohash, time)
+        geohashId = self.repository.findGeohashId(geohash)
+        data = None
+
+        if not geohashId:
+            geohashId = self.repository.createGeohash(geohash)
+        else:
+            data = self.repository.getByGeohashAndDate(geohash, time)
 
 
         # Тут нужно подумать о том чтобы обновлять записи так как время идет..
@@ -19,6 +25,8 @@ class NasaPower:
             end_year_timestamp = curdate.replace(year=curdate.year, month=12, day=31)
             start_year_str = start_year_timestamp.strftime("%Y%m%d")
             end_str = end_year_timestamp.strftime("%Y%m%d")
-            data = self.nasapowerClient.getDataByPointHourly(start_year_str, end_str, latitude, longitude)
-            # self.repository.save(data)
+            data = self.nasapowerClient.getDataByPointDaily(start_year_str, end_str, latitude, longitude)
+            # Не совсем понял что значит community, пока так, потом переделать!
+            self.repository.saveNasaPowerData(geohashId, data.getAllskySfcSwDwn(), int(start_year_timestamp.timestamp()), int(end_year_timestamp.timestamp()), 'RE')
+
         return data
