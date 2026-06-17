@@ -21,7 +21,7 @@ def read_item():
     logger = VKLogger(LOG_PATH)
     client = NasapowerClient(logger)
     useCase = NasaPower(repo, client)
-    data = useCase.getByGeohashAndDate(59.887, 30.3095, time.time())
+    data = useCase.getByGeohashAndDate(latitude=59.887, longitude=30.3095, time=time.time())
     # nasapowerClient = NasapowerClient(logger)
     # response = nasapowerClient.getDataByPointHourly(20260101, 20260616, 59.887, 30.3095)
     return data
