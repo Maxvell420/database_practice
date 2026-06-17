@@ -1,0 +1,14 @@
+FROM postgres:18.4
+
+# Добавляем официальный репозиторий PostgreSQL
+RUN apt-get update && \
+    apt-get install -y curl ca-certificates gnupg lsb-release && \
+    curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/postgresql-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
+    apt-get update
+
+# Устанавливаем PostGIS для PostgreSQL 18
+RUN apt-get install -y \
+    postgresql-18-postgis-3 \
+    postgresql-18-postgis-3-scripts \
+    && rm -rf /var/lib/apt/lists/*

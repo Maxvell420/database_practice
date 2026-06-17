@@ -1,7 +1,8 @@
 services:
     pgsql:
         container_name: pgsql
-        image: 'postgres'
+        build:
+            dockerfile: .docker/postgresql/dockerfile
         ports:
             - '${DB1_PORT:-5432}:5432'
         environment:
@@ -11,3 +12,4 @@ services:
             POSTGRES_PASSWORD: '${DB1_PASSWORD:-secret}'
         volumes:
             - ./.docker/postgresql/data:/var/lib/postgresql
+            - ./.docker/postgresql/init:/docker-entrypoint-initdb.d
