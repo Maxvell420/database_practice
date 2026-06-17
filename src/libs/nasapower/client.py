@@ -13,7 +13,7 @@ class Client:
         self.logger = logger
 
 
-    def getDataByPointHourly(self, start_date: int, end_date: int, latitude: float, longitude: float, units: Units = Units.METRIC, user: str = 'DAVE', time_standard: TimeStandard = TimeStandard.LST):
+    def getDataByPointHourly(self, start_date: str, end_date: str, latitude: float, longitude: float, units: Units = Units.METRIC, user: str = 'DAVE', time_standard: TimeStandard = TimeStandard.LST):
         url = f'{self.API_URL}/temporal/daily/point'
         params = {
             'start': start_date,

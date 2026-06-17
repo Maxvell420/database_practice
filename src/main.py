@@ -5,6 +5,9 @@ from src.libs.infra.context import Context
 from src.libs.infra.allocator import Allocator
 from src.libs.vk.vkLogger import VKLogger
 from src.libs.nasapower.client import Client as NasapowerClient
+from src.domain.map.repositories.nasaPowerRepository import NasaPowerRepository
+import time
+from src.domain.map.useCases.nasaPower import NasaPower
 allocator = Allocator()
 context = Context(allocator)
 app = FastAPI()
@@ -14,7 +17,11 @@ LOG_PATH = str(os.getenv('LOG_DIR')) + '/' + str(os.getenv('LOG_FILE_PATH'))
 
 @app.get("/users")
 def read_item():
+    repo = NasaPowerRepository(context.pgDb)
     logger = VKLogger(LOG_PATH)
-    nasapowerClient = NasapowerClient(logger)
-    response = nasapowerClient.getDataByPointHourly(20260101, 20260616, 59.887, 30.3095)
-    return response
+    client = NasapowerClient(logger)
+    useCase = NasaPower(repo, client)
+    data = useCase.getByGeohashAndDate(59.887, 30.3095, time.time())
+    # nasapowerClient = NasapowerClient(logger)
+    # response = nasapowerClient.getDataByPointHourly(20260101, 20260616, 59.887, 30.3095)
+    return data
