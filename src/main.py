@@ -11,17 +11,15 @@ from src.domain.map.useCases.nasaPower import NasaPower
 allocator = Allocator()
 context = Context(allocator)
 app = FastAPI()
-
+from src.libs.nspd.client import Client as NspdClient
 # Сейчас константа для файла логов, потом можно разделить на директорию и файл
 LOG_PATH = str(os.getenv('LOG_DIR')) + '/' + str(os.getenv('LOG_FILE_PATH'))
 
 @app.get("/users")
 def read_item():
-    repo = NasaPowerRepository(context.pgDb)
     logger = VKLogger(LOG_PATH)
-    client = NasapowerClient(logger)
-    useCase = NasaPower(repo, client)
-    data = useCase.getByGeohashAndDate(latitude=59.887, longitude=30.3095, time=time.time())
+    client = NspdClient(logger)
+    data = client.getGeoportalSearch('xxx')
     # nasapowerClient = NasapowerClient(logger)
     # response = nasapowerClient.getDataByPointHourly(20260101, 20260616, 59.887, 30.3095)
     return data
