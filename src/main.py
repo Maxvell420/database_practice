@@ -6,7 +6,6 @@ from src.libs.infra.allocator import Allocator
 from src.libs.vk.vkLogger import VKLogger
 from src.libs.nasapower.client import Client as NasapowerClient
 from src.domain.map.repositories.nasaPowerRepository import NasaPowerRepository
-import time
 from src.domain.map.useCases.nasaPower import NasaPower
 allocator = Allocator()
 context = Context(allocator)
