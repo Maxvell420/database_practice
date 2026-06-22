@@ -1,6 +1,6 @@
-from dataclasses import dataclass
-@dataclass
-class Message:
+from pydantic import BaseModel
+
+class Message(BaseModel):
     id: int
     from_id: int
     date: int

@@ -1,7 +1,6 @@
-from dataclasses import dataclass
 
-@dataclass
-class ClientInfo:
+from pydantic import BaseModel
+class ClientInfo(BaseModel):
     button_actions: list[str]
     keyboard: bool
     inline_keyboard: bool

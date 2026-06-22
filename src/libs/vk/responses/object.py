@@ -1,7 +1,7 @@
-from dataclasses import dataclass
+
 from .message import Message
 from .clientInfo import ClientInfo
-@dataclass
-class Object:
+from pydantic import BaseModel
+class Object(BaseModel):
     message: Message
     client_info: ClientInfo
