@@ -15,10 +15,9 @@ from src.libs.nspd.client import Client as NspdClient
 LOG_PATH = str(os.getenv('LOG_DIR')) + '/' + str(os.getenv('LOG_FILE_PATH'))
 
 @app.get("/users")
-def read_item():
-    logger = VKLogger(LOG_PATH)
-    client = NspdClient(logger)
-    data = client.getGeoportalSearch('xxx')
+async def read_item():
+    repository = NasaPowerRepository(await context.pgDb())
+    data = await repository.getByGeohashAndDate('xxx', 12)
     # nasapowerClient = NasapowerClient(logger)
     # response = nasapowerClient.getDataByPointHourly(20260101, 20260616, 59.887, 30.3095)
     return data
