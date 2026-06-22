@@ -1,30 +1,31 @@
 from os import getenv
 from dotenv import load_dotenv
-from psycopg2 import connect
-from psycopg2.extensions import connection
-
 from .parts.pg import PGParts
 from .secrets import Secrets
 from .parts.vk import VKParts
-
-
+from asyncpg.pool import create_pool, Pool
+from asyncpg.connection import Connection
 load_dotenv()
 class Allocator:
     def __init__(self):
         self._secrets: Secrets | None = None
-        self._pg_db: connection | None = None
+        self._pgDbPool: Pool | None = None
 
-    @property
     def secrets(self) -> Secrets:
         if self._secrets is None:
             self._secrets = self.loadSecrets()
         return self._secrets
 
-    @property
-    def pgDb(self) -> connection:
-        if self._pg_db is None:
-            self._pg_db = self.loadPgDb()
-        return self._pg_db
+    async def pgDbPool(self) -> Pool:
+        if self._pgDbPool is None:
+            self._pgDbPool =await create_pool(
+            host=self.secrets().pg.host,
+            port=self.secrets().pg.port,
+            user=self.secrets().pg.user,
+            password=self.secrets().pg.password,
+            database=self.secrets().pg.database
+        )
+        return self._pgDbPool
 
     def loadSecrets(self) -> Secrets:
         return Secrets(pg=self.loadPgParts(), vk=self.loadVkParts())
@@ -43,16 +44,6 @@ class Allocator:
         return VKParts(
             token=self.getInvVariable('VK_TOKEN'),
             group_id=int(self.getInvVariable('GROUP_ID'))
-        )
-
-    def loadPgDb(self) -> connection:
-        secrets = self.secrets
-        return connect(
-            host=secrets.pg.host,
-            port=secrets.pg.port,
-            user=secrets.pg.user,
-            password=secrets.pg.password,
-            database=secrets.pg.database
         )
 
     def getInvVariable(self, variable: str) -> str:

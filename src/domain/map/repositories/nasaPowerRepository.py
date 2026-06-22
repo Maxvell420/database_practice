@@ -1,66 +1,69 @@
-from src.libs.infra.baseRepository import BaseRepository
-import json
 from src.domain.map.values.nasaPowerPoint import NasaPowerPoint
+from src.libs.infra.baseRepository import BaseRepository
+from asyncpg.protocol.record import Record
+from typing import Any, cast
+import json
 class NasaPowerRepository(BaseRepository):
 
-    def getByGeohashAndDate(self, geohash: str, timestamp: float) -> NasaPowerPoint | None:
-        sql = f"""
-            SELECT 
-                nasapower_geohashes_data.data
-            FROM 
-                geohashes
-            INNER JOIN nasapower_geohashes_data ON (geohashes.id = nasapower_geohashes_data.geohash_id)
-            WHERE 
-                geohashes.geohash = '{geohash}' 
-                AND nasapower_geohashes_data.timestamp_from <= {timestamp} 
-                AND nasapower_geohashes_data.timestamp_to >= {timestamp}
-            ORDER BY 
-                timestamp_from ASC
+    async def getByGeohashAndDate(self, geohash: str, timestamp: float) -> NasaPowerPoint | None:
+        sql = """
+            SELECT nasapower_geohashes_data.data
+            FROM geohashes
+            INNER JOIN nasapower_geohashes_data
+                ON geohashes.id = nasapower_geohashes_data.geohash_id
+            WHERE geohashes.geohash = $1
+              AND nasapower_geohashes_data.timestamp_from <= $2
+              AND nasapower_geohashes_data.timestamp_to >= $2
+            ORDER BY timestamp_from ASC
+            LIMIT 1
         """
+        async with self.connection() as conn:
+            row = await conn.fetchrow(sql, geohash, timestamp)
+            if row is None:
+                return None
+            data = json.loads(row.get('data'))
+            return NasaPowerPoint(data=data)
 
-        db = self.db.cursor()
-        db.execute(sql)
-        row = db.fetchone()
-        if row:
-            return NasaPowerPoint(
-                data=row[0]
-            )
-
-        return None
-
-    def createGeohash(self, geohash: str) -> int:
-        sql = f"""
-            INSERT INTO geohashes (geohash) VALUES ('{geohash}')
+    async def createGeohash(self, geohash: str) -> int:
+        sql = """
+            INSERT INTO geohashes (geohash) VALUES ($1)
             ON CONFLICT (geohash) DO NOTHING
-            RETURNING geohashes.id
+            RETURNING id
         """
-        db = self.db.cursor()
-        db.execute(sql)
-        self.db.commit()
+        async with self.connection() as conn:
+            geohash_id = await conn.fetchval(sql, geohash)
 
-        row = db.fetchone()
-        if row:
-            return int(row[0])
-        else:
+        if geohash_id is None:
             raise Exception("Failed to create geohash")
 
-    def findGeohashId(self, geohash: str) -> int | None:
-        sql = f"""
-            SELECT geohashes.id FROM geohashes WHERE geohashes.geohash = '{geohash}'
+        return int(geohash_id)
+
+    async def findGeohashId(self, geohash: str) -> int | None:
+        sql = """
+            SELECT id FROM geohashes WHERE geohash = $1
         """
-        db = self.db.cursor()
-        db.execute(sql)
-        row = db.fetchone()
-        if row:
-            return int(row[0])
-        else:
+        async with self.connection() as conn:
+            geohash_id = await conn.fetchval(sql, geohash)
+
+        if geohash_id is None:
             return None
 
+        return int(geohash_id)
 
-    def saveNasaPowerData(self, geohashId: int, data: dict[str, float], timestamp_from: int, timestamp_to: int, data_type: str):
-        sql = f"""
-            INSERT INTO nasapower_geohashes_data (geohash_id, data_type, timestamp_from, timestamp_to, data) VALUES ({geohashId}, '{data_type}', {timestamp_from}, {timestamp_to}, '{json.dumps(data)}')
+    async def saveNasaPowerData(
+        self,
+        geohashId: int,
+        data: dict[str, float],
+        timestamp_from: int,
+        timestamp_to: int,
+        data_type: str,
+    ) -> None:
+        sql = """
+            INSERT INTO nasapower_geohashes_data
+                (geohash_id, data_type, timestamp_from, timestamp_to, data)
+            VALUES ($1, $2, $3, $4, $5)
         """
-        db = self.db.cursor()
-        db.execute(sql)
-        self.db.commit()
+        async with self.connection() as conn:
+            await conn.execute(
+                sql, geohashId, data_type, timestamp_from, timestamp_to, data
+            )
