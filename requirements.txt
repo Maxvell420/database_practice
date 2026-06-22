@@ -36,11 +36,13 @@ python-dotenv==1.2.2
 python-multipart==0.0.32
 PyYAML==6.0.3
 requests==2.34.2
+requests-async==0.2.4
 rich==15.0.0
 rich-toolkit==0.20.0
 rignore==0.7.6
 sentry-sdk==2.61.1
 shellingham==1.5.4
+socksio==1.0.0
 starlette==1.2.1
 typer==0.26.7
 typing-inspection==0.4.2
