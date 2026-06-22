@@ -18,11 +18,11 @@ class Client:
         response = await self.sendGetRequest(url, params, False)
         if not response.isOk():
             raise Exception('Не удалось получить данные из API кадастровой карты')
-            # Нужно распарсить ответ и если временный блок то еще раз?
+            # Нужно распарсить ответ и если временный блок то еще раз?p
         return response.getGeoportalSearchResponse().data
 
     async def sendGetRequest(self, url: str, params: dict, verify: bool = False) -> Response:
-        response = await requests_async.get(url, params=params,verify=verify)
+        response = await requests_async.get(url, params=params,verify=verify,headers={'Referer': 'https://nspd.gov.ru/map?'})
         if response.status_code != 200:
             self.logger.error(f'Error getting geoportal search: {response.status_code} {response.text}')
             return Response(Result.ERROR, response.text)
