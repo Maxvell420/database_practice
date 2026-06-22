@@ -1,11 +1,9 @@
 from src.domain.map.values.nasaPowerPoint import NasaPowerPoint
 from src.libs.infra.baseRepository import BaseRepository
-from asyncpg.protocol.record import Record
-from typing import Any, cast
 import json
 class NasaPowerRepository(BaseRepository):
 
-    async def getByGeohashAndDate(self, geohash: str, timestamp: float) -> NasaPowerPoint | None:
+    async def getByGeohashAndDate(self, geohash: str, timestamp: float) -> NasaPowerPoint | None: 
         sql = """
             SELECT nasapower_geohashes_data.data
             FROM geohashes
@@ -17,12 +15,17 @@ class NasaPowerRepository(BaseRepository):
             ORDER BY timestamp_from ASC
             LIMIT 1
         """
+
+        data = None
+        
         async with self.connection() as conn:
             row = await conn.fetchrow(sql, geohash, timestamp)
-            if row is None:
-                return None
-            data = json.loads(row.get('data'))
-            return NasaPowerPoint(data=data)
+            if row is not None:
+                info = json.loads(row.get('data'))
+                data = NasaPowerPoint(data=info)
+            
+                
+        return data
 
     async def createGeohash(self, geohash: str) -> int:
         sql = """

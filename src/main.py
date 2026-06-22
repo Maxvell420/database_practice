@@ -16,8 +16,11 @@ LOG_PATH = str(os.getenv('LOG_DIR')) + '/' + str(os.getenv('LOG_FILE_PATH'))
 
 @app.get("/users")
 async def read_item():
-    repository = NasaPowerRepository(await context.pgDb())
-    data = await repository.getByGeohashAndDate('xxx', 12)
+    # repository = NasaPowerRepository(await context.pgDb())
+    # data = await repository.getByGeohashAndDate('xxx', 12)
+    logger = VKLogger(LOG_PATH)
     # nasapowerClient = NasapowerClient(logger)
-    # response = nasapowerClient.getDataByPointHourly(20260101, 20260616, 59.887, 30.3095)
-    return data
+    # response = await nasapowerClient.getDataByPointDaily('20260101', '20260616', 59.887, 30.3095)
+    nspdClient = NspdClient(logger)
+    response =nspdClient.getGeoportalSearch('Усолье-Сибирское комсомольский проспект 83')
+    return response
