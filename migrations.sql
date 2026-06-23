@@ -12,3 +12,33 @@ CREATE TABLE IF NOT EXISTS nasapower_geohashes_data(
     data JSON NOT NULL,
     FOREIGN KEY (geohash_id) REFERENCES geohashes(id)
 );
+
+CREATE TABLE IF NOT EXISTS messengers_requests(
+    id SERIAL PRIMARY KEY,
+    messenger_type INT NOT NULL,
+    data JSON NOT NULL,
+    user_uuid VARCHAR(36) DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS messengers_responses(
+    id SERIAL PRIMARY KEY,
+    data JSON NOT NULL,
+    user_uuid VARCHAR(36) DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS messengers_updates_history(
+    id SERIAL PRIMARY KEY,
+    messenger_type INT NOT NULL,
+    request_id INT NOT NULL,
+    response_id INT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS users_states(
+    messenger_type INT NOT NULL,
+    user_uuid VARCHAR(36) NOT NULL,
+    state int NOT NULL,
+    data JSON NOT NULL
+);
