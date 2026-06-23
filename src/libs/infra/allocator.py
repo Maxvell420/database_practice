@@ -4,7 +4,6 @@ from .parts.pg import PGParts
 from .secrets import Secrets
 from .parts.vk import VKParts
 from asyncpg.pool import create_pool, Pool
-from asyncpg.connection import Connection
 load_dotenv()
 class Allocator:
     def __init__(self):
@@ -54,4 +53,5 @@ class Allocator:
 
         return envVariable
 
-
+    def getLogPath(self) -> str:
+        return str(self.getInvVariable('LOG_DIR')) + '/' + str(self.getInvVariable('LOG_FILE_PATH'))
