@@ -3,6 +3,8 @@ from src.libs.infra.allocator import Allocator
 from src.libs.vk.client import Client as VKClient
 import os
 from src.libs.vk.vkLogger import VKLogger
+from src.domain.messengers.facade import Facade
+import asyncio
 # переделать на DI
 allocator = Allocator()
 context = Context(allocator)
@@ -16,11 +18,11 @@ class Demon:
         self.vkClient = VKClient(context.secrets().vk.token, context.secrets().vk.group_id, logger)
 
     async def run(self):
-        pass
-        # while True:
-        #     updates = await self.vkClient.getUpdates()
-        #     if updates.isOk():
-        #         for update in updates.data['updates']:
-        #             if update['type'] == 'message_new':
-        #                 message = update['message']
-        #                 await self.vkClient.sendMessage(message['from_id'], message['text'])
+        facade = Facade(self.context)
+        await facade.runVkRunner()
+
+def main():
+    demon = Demon(context)
+    asyncio.run(demon.run())
+
+main()

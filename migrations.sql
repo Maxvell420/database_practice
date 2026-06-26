@@ -17,22 +17,18 @@ CREATE TABLE IF NOT EXISTS messengers_requests(
     id SERIAL PRIMARY KEY,
     messenger_type INT NOT NULL,
     data JSON NOT NULL,
+    request_uuid VARCHAR(50) NOT NULL,
     user_uuid VARCHAR(36) DEFAULT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS messengers_responses(
     id SERIAL PRIMARY KEY,
-    data JSON NOT NULL,
-    user_uuid VARCHAR(36) DEFAULT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS messengers_updates_history(
-    id SERIAL PRIMARY KEY,
     messenger_type INT NOT NULL,
     request_id INT NOT NULL,
-    response_id INT NOT NULL,
+    response_uuid VARCHAR(36) DEFAULT NULL,
+    data JSON NOT NULL,
+    user_uuid VARCHAR(36) DEFAULT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
