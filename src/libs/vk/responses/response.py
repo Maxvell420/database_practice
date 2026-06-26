@@ -1,6 +1,7 @@
 from src.libs.vk.enums.result import Result
 from typing import Any
 from .LongPollServerResponse import LongPollServerResponse
+from .sendMessageDataResponse import SendMessageDataResponse
 from .update import Update
 
 class Response:
@@ -20,3 +21,6 @@ class Response:
         for update in self.data['updates']:
             data.append(Update.model_validate(update))
         return data
+
+    def getSendMessageDataResponse(self) -> SendMessageDataResponse:
+        return SendMessageDataResponse.model_validate(self.data)

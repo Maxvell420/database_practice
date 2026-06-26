@@ -25,5 +25,5 @@ async def read_item():
     for update in updates:
         if update.type == UpdateType.MESSAGE_NEW:
             message = update.object.message
-            await client.sendMessage(message.from_id, message.text)
-    return updates
+            answer = await client.sendMessage(message.from_id, message.text)
+    return answer

@@ -5,6 +5,7 @@ from .enums.result import Result
 from .responses.LongPollServerResponse import LongPollServerResponse
 from src.libs.infra.logger import Logger
 from .responses.update import Update
+from .responses.sendMessageDataResponse import SendMessageDataResponse
 class Client:
 
     API_URL = 'https://api.vk.com/method/'
@@ -72,7 +73,7 @@ class Client:
         return Response(status, response.json())
 
     # TODO передавать обьект
-    async def sendMessage(self,user_id: int, message: str):
+    async def sendMessage(self, user_id: int, message: str) -> SendMessageDataResponse:
         headers = {
             'Authorization': f'Bearer {self.token}'
         }
@@ -83,4 +84,8 @@ class Client:
             'random_id': 0
         }
         response = await self.sendPostRequest(self.API_URL + 'messages.send', headers, data=data)
-        return response.getUpdatesResponse()
+
+        if not(response.isOk()):
+            raise Exception(response.data)
+
+        return response.getSendMessageDataResponse()

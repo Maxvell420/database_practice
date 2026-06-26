@@ -5,11 +5,14 @@ from src.domain.map.repositories.nasaPowerRepository import NasaPowerRepository
 from src.libs.nspd.client import Client as NspdClient
 from asyncpg.pool import Pool
 from src.libs.vk.vkLogger import VKLogger
-
+from src.libs.infra.context import Context
 class Builder:
+
+    def __init__(self, context: Context):
+        self.context = context
     
-    def buildVKClient(self, token: str, group_id: int, logger: Logger|None = None) -> VKClient:
-        return VKClient(token, group_id, logger)
+    async def buildVKClient(self, logger: Logger|None = None) -> VKClient:
+        return VKClient(self.context.secrets().vk.token, self.context.secrets().vk.group_id, logger)
 
     def buildNasaPowerClient(self, logger: Logger) -> NasaPowerClient:
         return NasaPowerClient(logger)
@@ -17,9 +20,5 @@ class Builder:
     def buildNspdClient(self, logger: Logger) -> NspdClient:
         return NspdClient(logger)
 
-    def buildNasaPowerRepository(self, pgDbPool: Pool) -> NasaPowerRepository:
-        return NasaPowerRepository(pgDbPool)
-    
-    # Сделать другие логгеры для других клиентов
-    def buildVkLogger(self, logPath: str) -> VKLogger:
-        return VKLogger(logPath)
+    async def buildNasaPowerRepository(self) -> NasaPowerRepository:
+        return NasaPowerRepository(await self.context.pgDb())
