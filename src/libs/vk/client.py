@@ -41,7 +41,7 @@ class Client:
         response = await requests_async.get(url, headers=headers, params=params)
 
         if self.logger is not None:
-            self.logger.info("Method: GET url: " + url + " params: " + str(params) + " response: " + str(response.text))
+            await self.logger.info(f"Method: GET url: {url} params: {params} response: {response.text}")
 
         status = Result.SUCCESS
         if response.status_code != 200:

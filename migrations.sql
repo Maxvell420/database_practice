@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS nasapower_geohashes_data(
     FOREIGN KEY (geohash_id) REFERENCES geohashes(id)
 );
 
+-- в этих таблицах надо будет уйти от id на uuid
 CREATE TABLE IF NOT EXISTS messengers_requests(
     id SERIAL PRIMARY KEY,
     messenger_type INT NOT NULL,
