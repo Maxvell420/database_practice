@@ -7,5 +7,5 @@ class Facade:
         self.builder = Builder(context)
 
     async def runVkRunner(self) -> None:
-        vkRunner = await self.builder.buildVKRunner()
+        vkRunner = await self.builder.buildVKRunner(await self.context.logger())
         await vkRunner.run()

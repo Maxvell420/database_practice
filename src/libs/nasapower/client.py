@@ -36,11 +36,11 @@ class Client:
         return response.getAllskyDaily()
 
     async def sendGetRequest(self, url: str, params: dict) -> Response:
-        self.logger.info(f'Getting data by point hourly: {url} {params}')
+        await self.logger.info(f'Getting data by point hourly: {url} {params}')
         response = await requests_async.get(url, params=params)
         status = Result.SUCCESS
         if response.status_code != 200:
             status = Result.ERROR
-            self.logger.error(f'Response: {response.text}')
+            await self.logger.error(f'Response: {response.text}')
         # не логирую ок запросы
         return Response(status, response.text)

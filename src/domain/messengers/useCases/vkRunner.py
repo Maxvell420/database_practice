@@ -6,6 +6,8 @@ from src.libs.vk.responses.update import Update
 from src.domain.messengers.values.vkText import VKText
 from src.domain.messengers.enums.messangerTypes import MessangerTypes
 from src.libs.infra.logger import Logger
+
+# тут нужно сделать загрузку не обработанных запросов и ответов и обработку их если демон перезапустился
 class VKRunner:
     def __init__(self, request_repository: RequestRepository, response_repository: ResponseRepository, vk_client: VKClient, logger: Logger | None = None):
         self.request_repository = request_repository

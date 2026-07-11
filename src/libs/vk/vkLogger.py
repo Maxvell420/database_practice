@@ -1,7 +1,7 @@
 from src.libs.infra.logger import Logger
 import os
 from datetime import datetime
-
+import aiofiles
 class VKLogger(Logger):
 
     def __init__(self, log_file_path: str):
@@ -9,15 +9,17 @@ class VKLogger(Logger):
         self.log_file_path = log_file_path
         os.makedirs(os.path.dirname(self.log_file_path), exist_ok=True)
 
-    def _log(self, level: str, message: str) -> None:
+    async def _log(self, level: str, message: str) -> None:
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        if message.endswith(("\n", "\r")):
+            message = message.rstrip("\r\n")
         log_message = f"{timestamp} {level} {message}\n"
 
-        with open(self.log_file_path, 'a') as f:
-            f.write(log_message)
+        async with aiofiles.open(self.log_file_path, 'a') as f:
+            await f.write(log_message)
 
-    def info(self, message: str):
-        self._log("[INF]", message)
+    async def info(self, message: str):
+        await self._log("[INF]", message)
 
-    def error(self, message: str):
-        self._log("[ERR]", message)
+    async def error(self, message: str):
+        await self._log("[ERR]", message)

@@ -9,7 +9,7 @@ class Builder:
     def __init__(self, context: Context):
         self.context = context
     async def buildVKRunner(self, logger: Logger | None = None) -> VKRunner:
-        return VKRunner(await self.buildRequestRepository(), await self.buildResponseRepository(), await self.buildVKClient(), logger)
+        return VKRunner(await self.buildRequestRepository(), await self.buildResponseRepository(), await self.buildVKClient(logger), logger)
 
     async def buildVKClient(self, logger: Logger | None = None) -> VKClient:
         return VKClient(self.context.secrets().vk.token, self.context.secrets().vk.group_id, logger)
