@@ -60,7 +60,7 @@ class Client:
         response = await self.sendGetRequest(url, {}, params)
         if response.isOk():
             server.ts = response.data["ts"]
-        print(response.data)
+
         return response.getUpdatesResponse()
 
     async def sendPostRequest(self, url: str, headers: dict, data: dict) -> Response:
