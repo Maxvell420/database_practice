@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS messengers_responses(
     response_uuid VARCHAR(36) DEFAULT NULL,
     data JSON NOT NULL,
     user_uuid VARCHAR(36) DEFAULT NULL,
+    status INT NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -4,15 +4,41 @@ from src.libs.vk.client import Client as VKClient
 from src.libs.infra.logger import Logger
 from src.domain.messengers.useCases.vkRunner import VKRunner
 from src.libs.infra.context import Context
+from src.domain.messengers.useCases.VkUpdatesService import VkUpdatesService
+from src.domain.messengers.useCases.VkResponseService import VkResponseService
+
+
 class Builder:
 
     def __init__(self, context: Context):
         self.context = context
+
     async def buildVKRunner(self, logger: Logger | None = None) -> VKRunner:
-        return VKRunner(await self.buildRequestRepository(), await self.buildResponseRepository(), await self.buildVKClient(logger), logger)
+        return VKRunner(
+            await self.buildVkUpdatesService(logger=logger),
+            await self.buildVkResponseService(logger=logger),
+            await self.buildVKClient(logger=logger),
+            logger,
+        )
+
+    async def buildVkUpdatesService(
+        self, logger: Logger | None = None
+    ) -> VkUpdatesService:
+        return VkUpdatesService(await self.buildRequestRepository(), logger)
+
+    async def buildVkResponseService(
+        self, logger: Logger | None = None
+    ) -> VkResponseService:
+        return VkResponseService(
+            await self.buildResponseRepository(),
+            await self.buildVKClient(logger),
+            logger,
+        )
 
     async def buildVKClient(self, logger: Logger | None = None) -> VKClient:
-        return VKClient(self.context.secrets().vk.token, self.context.secrets().vk.group_id, logger)
+        return VKClient(
+            self.context.secrets().vk.token, self.context.secrets().vk.group_id, logger
+        )
 
     async def buildRequestRepository(self) -> RequestRepository:
         return RequestRepository(await self.context.pgDb())
