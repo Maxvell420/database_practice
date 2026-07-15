@@ -26,10 +26,10 @@ class UpdatesHandler:
 
     async def handleStart(self, user_uid: int) -> SendMessage:
         button_1 = await self.keyboard_builder.buildInlineButton(
-            type=InlineButtonActionTypes.TEXT, label="Привет"
+            type=InlineButtonActionTypes.CALLBACK, label="Привет"
         )
         button_2 = await self.keyboard_builder.buildInlineButton(
-            type=InlineButtonActionTypes.TEXT, label="Пока"
+            type=InlineButtonActionTypes.CALLBACK, label="Пока"
         )
 
         await self.keyboard_builder.addButtonToRow(button_1)
