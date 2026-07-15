@@ -24,6 +24,8 @@ class VkResponseService:
             user_uuid=str(response.user_id),
         )
 
+    async def registerMessageEvent(self, response: MessageEvent, request_id: int) -> int:
+
     async def updateResponseUuid(self, response_id: int, uuid: str) -> None:
         await self.response_repository.updateResponseUuid(response_id, uuid)
 
