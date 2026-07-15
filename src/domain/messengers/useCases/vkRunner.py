@@ -60,6 +60,8 @@ class VKRunner:
                     new_response, request_id
                 )
                 self.new_responses[response_id] = new_response
+            elif update.type == UpdateType.MESSAGE_EVENT:
+                
 
             self.new_updates.pop(request_id)
 
