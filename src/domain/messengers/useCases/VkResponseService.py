@@ -1,4 +1,5 @@
 from src.domain.messengers.repositories.responseRepository import ResponseRepository
+from src.domain.messengers.vk.values.editMessage import EditMessage
 from src.libs.infra.logger import Logger
 from src.domain.messengers.enums.messangerTypes import MessangerTypes
 from src.domain.messengers.vk.values.sendMessage import SendMessage
@@ -24,7 +25,13 @@ class VkResponseService:
             user_uuid=str(response.user_id),
         )
 
-    async def registerMessageEvent(self, response: MessageEvent, request_id: int) -> int:
+    async def registerMessageEdit(self, response: EditMessage, request_id: int) -> int:
+        return await self.response_repository.createResponse(
+            messenger_type=MessangerTypes.VK.value,
+            request_id=request_id,
+            data=response.model_dump_json(),
+            user_uuid=str(response.user_id),
+        )
 
     async def updateResponseUuid(self, response_id: int, uuid: str) -> None:
         await self.response_repository.updateResponseUuid(response_id, uuid)

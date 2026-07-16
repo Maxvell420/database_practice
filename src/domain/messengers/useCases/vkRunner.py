@@ -45,15 +45,9 @@ class VKRunner:
     async def processNewUpdates(self):
         for request_id, update in list[tuple[int, Update]](self.new_updates.items()):
             if update.type == UpdateType.MESSAGE_NEW:
-                message = update.object.message
-
-                # Может это тоже отсюда убрать, слишком грязно
-                if message is None:
-                    if self.logger is not None:
-                        await self.logger.error(f"Message is not found")
-                    raise ValueError(f"Message is not found")
+                message_new = update.getMessageNewUpdate()
                 new_response = await self.vk_facade.handleNewMessage(
-                    message.text, message.from_id
+                    message_new.message.text, message_new.message.from_id
                 )
 
                 response_id = await self.response_service.registerSendMessage(
@@ -61,8 +55,16 @@ class VKRunner:
                 )
                 self.new_responses[response_id] = new_response
             elif update.type == UpdateType.MESSAGE_EVENT:
-                
-
+                message_event = update.getMessageEventUpdate()
+                new_response = await self.vk_facade.handleMessageEvent(
+                    message_event.object.payload,
+                    message_event.object.user_id,
+                    message_event.object.conversation_message_id,
+                )
+                response_id = await self.response_service.registerSendMessage(
+                    new_response, request_id
+                )
+                self.new_responses[response_id] = new_response
             self.new_updates.pop(request_id)
 
     async def processNewResponses(self):

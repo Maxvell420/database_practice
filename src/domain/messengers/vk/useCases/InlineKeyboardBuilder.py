@@ -6,6 +6,7 @@ from src.domain.messengers.vk.enums.InlineButtonActionTypes import (
     InlineButtonActionTypes,
 )
 from src.domain.messengers.vk.entities.inlineKeyboard import InlineKeyboard
+from src.domain.messengers.vk.entities.payload import Payload
 
 
 class InlineKeyboardBuilder:
@@ -35,6 +36,7 @@ class InlineKeyboardBuilder:
         owner_id: None | int = None,
         hash: None | str = None,
         color: None | str = None,
+        payload: None | Payload = None,
     ) -> InlineKeyboardButton:
         return InlineKeyboardButton(
             action=InlineKeyboardButtonAction(
@@ -45,6 +47,7 @@ class InlineKeyboardBuilder:
                 app_id=app_id,
                 owner_id=owner_id,
                 hash=hash,
+                payload=payload.model_dump_json() if payload else None,
             ),
             color=color,
         )

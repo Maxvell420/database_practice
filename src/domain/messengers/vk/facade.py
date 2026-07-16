@@ -2,6 +2,7 @@ from src.libs.infra.logger import Logger
 from src.domain.messengers.vk.values.sendMessage import SendMessage
 from src.domain.messengers.vk.builder import Builder
 from src.libs.vk.responses.object import Object
+from src.domain.messengers.vk.entities.payload import Payload
 
 
 class Facade:
@@ -13,6 +14,8 @@ class Facade:
         useCase = await self.builder.buildUpdatesHandler()
         return await useCase.handleNewMessage(text, user_uid)
 
-    async def handleMessageEvent(self, payload: str, user_uid: int) -> Object:
+    async def handleMessageEvent(
+        self, payload: Payload, user_uid: int, request_id: int
+    ) -> object:
         useCase = await self.builder.buildUpdatesHandler()
-        return await useCase.handleMessageEvent(payload, user_uid)
+        return await useCase.handleMessageEvent(payload, user_uid, message_uid)
