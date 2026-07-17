@@ -8,12 +8,13 @@ from src.domain.messengers.vk.enums.InlineButtonActionTypes import (
 from src.domain.messengers.vk.values.sendMessage import SendMessage
 from src.domain.messengers.vk.values.editMessage import EditMessage
 from src.domain.messengers.repositories.responseRepository import ResponseRepository
-from src.domain.messengers.models.response import Response
 from src.domain.messengers.vk.entities.payload import Payload
 from src.domain.messengers.vk.enums.actions import Actions
 from src.domain.messengers.vk.values.editMessage import EditMessage
 from src.domain.messengers.enums.messangerTypes import MessangerTypes
 from src.domain.messengers.vk.entities.inlineKeyboard import InlineKeyboard
+from src.domain.messengers.repositories.stateRepository import StateRepository
+from src.domain.messengers.models.state import State
 
 
 class UpdatesHandler:
@@ -21,15 +22,25 @@ class UpdatesHandler:
         self,
         keyboard_builder: InlineKeyboardBuilder,
         response_repository: ResponseRepository,
+        state_repository: StateRepository,
     ):
         self.keyboard_builder = keyboard_builder
         self.response_repository = response_repository
+        self.state_repository = state_repository
 
     async def handleNewMessage(self, text: str, user_uid: int) -> SendMessage:
         for command in Commands:
             if text == command.value:
                 return await self.handleCommand(command, user_uid)
+
+        state = await self.state_repository.findState(user_uid, MessangerTypes.VK)
+        if not (state is None):
+            pass
+
         return SendMessage(text="Текст заглушка", user_id=user_uid, keyboard=None)
+
+    async def handleStateUpdate(self, state: State, text: str, user_uid: int) -> SendMessage:
+        if state.state == States.START:
 
     async def handleCommand(self, command: Commands, user_uid: int) -> SendMessage:
         if command == Commands.START:
