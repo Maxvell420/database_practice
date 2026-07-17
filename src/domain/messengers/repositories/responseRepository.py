@@ -1,5 +1,7 @@
 from src.libs.infra.baseRepository import BaseRepository
 from src.domain.messengers.models.response import Response
+from src.domain.messengers.enums.messangerTypes import MessangerTypes
+import json
 
 
 class ResponseRepository(BaseRepository):
@@ -25,20 +27,3 @@ class ResponseRepository(BaseRepository):
         """
         async with self.connection() as conn:
             await conn.execute(sql, response_id, response_uuid)
-
-    async def getResponseByUuid(self, response_uuid: str) -> Response:
-        sql = """
-            SELECT * FROM messengers_responses WHERE response_uuid = $1
-        """
-        async with self.connection() as conn:
-            response = await conn.fetchrow(sql, response_uuid)
-            if response is None:
-                raise Exception("Response not found")
-            return Response(
-                id=response["id"],
-                messenger_type=response["messenger_type"],
-                request_id=response["request_id"],
-                data=response["data"],
-                user_uuid=response["user_uuid"],
-                response_uuid=response["response_uuid"],
-            )

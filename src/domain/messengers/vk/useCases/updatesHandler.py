@@ -11,6 +11,9 @@ from src.domain.messengers.repositories.responseRepository import ResponseReposi
 from src.domain.messengers.models.response import Response
 from src.domain.messengers.vk.entities.payload import Payload
 from src.domain.messengers.vk.enums.actions import Actions
+from src.domain.messengers.vk.values.editMessage import EditMessage
+from src.domain.messengers.enums.messangerTypes import MessangerTypes
+from src.domain.messengers.vk.entities.inlineKeyboard import InlineKeyboard
 
 
 class UpdatesHandler:
@@ -39,18 +42,23 @@ class UpdatesHandler:
     ) -> object:
 
         if payload.action == Actions.SEARCH_RADIATION:
-            pass
+            return await self.handleSearchRadiation(user_uid, message_uid)
         else:
             raise ValueError(f"Unknown action: {payload.action}")
 
-        if payload == "":
-            response = await self.response_repository.getResponseByUuid(
-                str(message_uid)
-            )
-            return EditMessage(text="Текст заглушка", user_id=user_uid)
         raise ValueError(f"Unknown payload: {payload}")
 
-    async def handleStart(self, user_uid: int) -> SendMessage:
+    async def handleSearchRadiation(
+        self, user_uid: int, response_uid: int
+    ) -> EditMessage:
+        response = EditMessage(
+            text="Измененное сообщение",
+            peer_id=user_uid,
+            message_id=response_uid,
+        )
+        return response
+
+    async def getStartKeyboard(self) -> InlineKeyboard:
         button_1 = await self.keyboard_builder.buildInlineButton(
             type=InlineButtonActionTypes.CALLBACK,
             label="Искать радиацию",
@@ -59,14 +67,11 @@ class UpdatesHandler:
 
         await self.keyboard_builder.addButtonToRow(button_1)
         await self.keyboard_builder.addRowToKeyboard()
-        keyboard = await self.keyboard_builder.buildInlineKeyboard()
+        return await self.keyboard_builder.buildInlineKeyboard()
+
+    async def handleStart(self, user_uid: int) -> SendMessage:
+        keyboard = await self.getStartKeyboard()
 
         return SendMessage(
-            text="Привет это очень большой тескст", user_id=user_uid, keyboard=keyboard
+            text="Привет это очень большой текст", user_id=user_uid, keyboard=keyboard
         )
-
-    async def getHideKeyboardResponse(self, Response: Response) -> EditMessage:
-        data = Response.data
-        data["keyboard"] = None
-
-        return EditMessage.model_validate(data)
