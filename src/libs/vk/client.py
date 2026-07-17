@@ -86,21 +86,41 @@ class Client:
     async def sendMessage(
         self, user_id: int, message: str, keyboard: InlineKeyboard | None = None
     ) -> SendMessageDataResponse:
-        headers = {"Authorization": f"Bearer {self.token}"}
         data = {
             "message": message,
-            "v": self.VK_API_VERSION,
             "user_id": user_id,
-            "random_id": 0,
         }
         if keyboard is not None:
             data["keyboard"] = keyboard.model_dump_json(exclude_none=True)
+        response = await self.sendRequest("messages.send", data=data)
+        return response.getSendMessageDataResponse()
 
-        response = await self.sendPostRequest(
-            self.API_URL + "messages.send", headers, data=data
-        )
+    async def editMessage(
+        self,
+        peer_id: int,
+        message: str,
+        message_id: int,
+        keyboard: InlineKeyboard | None = None,
+    ):
+        data = {
+            "message": message,
+            "peer_id": peer_id,
+            "cmid": message_id,
+        }
+
+        if keyboard is not None:
+            data["keyboard"] = keyboard.model_dump_json(exclude_none=True)
+
+        return await self.sendRequest(method="messages.edit", data=data)
+
+    async def sendRequest(self, method: str, data: dict) -> Response:
+        headers = {"Authorization": f"Bearer {self.token}"}
+        data["random_id"] = 0
+        data["v"] = self.VK_API_VERSION
+
+        response = await self.sendPostRequest(self.API_URL + method, headers, data=data)
 
         if not (response.isOk()):
             raise Exception(response.data)
 
-        return response.getSendMessageDataResponse()
+        return response

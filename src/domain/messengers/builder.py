@@ -6,6 +6,7 @@ from src.domain.messengers.useCases.vkRunner import VKRunner
 from src.libs.infra.context import Context
 from src.domain.messengers.useCases.VkUpdatesService import VkUpdatesService
 from src.domain.messengers.useCases.VkResponseService import VkResponseService
+from src.domain.messengers.vk.facade import Facade as VKFacade
 
 
 class Builder:
@@ -18,6 +19,7 @@ class Builder:
             await self.buildVkUpdatesService(logger=logger),
             await self.buildVkResponseService(logger=logger),
             await self.buildVKClient(logger=logger),
+            await self.buildVKFacade(logger=logger),
             logger,
         )
 
@@ -25,6 +27,9 @@ class Builder:
         self, logger: Logger | None = None
     ) -> VkUpdatesService:
         return VkUpdatesService(await self.buildRequestRepository(), logger)
+
+    async def buildVKFacade(self, logger: Logger | None = None) -> VKFacade:
+        return VKFacade(self.context, logger)
 
     async def buildVkResponseService(
         self, logger: Logger | None = None

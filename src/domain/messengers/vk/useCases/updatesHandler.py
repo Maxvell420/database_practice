@@ -9,6 +9,12 @@ from src.domain.messengers.vk.values.sendMessage import SendMessage
 from src.domain.messengers.vk.values.editMessage import EditMessage
 from src.domain.messengers.repositories.responseRepository import ResponseRepository
 from src.domain.messengers.models.response import Response
+from src.domain.messengers.vk.entities.payload import Payload
+from src.domain.messengers.vk.enums.actions import Actions
+from src.domain.messengers.vk.values.editMessage import EditMessage
+from src.domain.messengers.enums.messangerTypes import MessangerTypes
+from src.domain.messengers.vk.entities.inlineKeyboard import InlineKeyboard
+
 
 class UpdatesHandler:
     def __init__(
@@ -32,36 +38,40 @@ class UpdatesHandler:
             raise ValueError(f"Unknown command: {command}")
 
     async def handleMessageEvent(
-        self, payload: str, user_uid: int, message_uid: int
+        self, payload: Payload, user_uid: int, message_uid: int
     ) -> object:
-        if payload == "":
-            response = await self.response_repository.getResponseByUuid(
-                str(message_uid)
-            )
-            return EditMessage(text="Текст заглушка", user_id=user_uid)
+
+        if payload.action == Actions.SEARCH_RADIATION:
+            return await self.handleSearchRadiation(user_uid, message_uid)
+        else:
+            raise ValueError(f"Unknown action: {payload.action}")
+
         raise ValueError(f"Unknown payload: {payload}")
 
-    async def handleStart(self, user_uid: int) -> SendMessage:
-        button_1 = await self.keyboard_builder.buildInlineButton(
-            type=InlineButtonActionTypes.CALLBACK, label="Привет"
+    async def handleSearchRadiation(
+        self, user_uid: int, response_uid: int
+    ) -> EditMessage:
+        response = EditMessage(
+            text="Измененное сообщение",
+            peer_id=user_uid,
+            message_id=response_uid,
         )
-        button_2 = await self.keyboard_builder.buildInlineButton(
-            type=InlineButtonActionTypes.CALLBACK, label="Пока"
+        return response
+
+    async def getStartKeyboard(self) -> InlineKeyboard:
+        button_1 = await self.keyboard_builder.buildInlineButton(
+            type=InlineButtonActionTypes.CALLBACK,
+            label="Искать радиацию",
+            payload=Payload(action=Actions.SEARCH_RADIATION),
         )
 
         await self.keyboard_builder.addButtonToRow(button_1)
-        await self.keyboard_builder.addButtonToRow(button_2)
         await self.keyboard_builder.addRowToKeyboard()
-        keyboard = await self.keyboard_builder.buildInlineKeyboard()
+        return await self.keyboard_builder.buildInlineKeyboard()
+
+    async def handleStart(self, user_uid: int) -> SendMessage:
+        keyboard = await self.getStartKeyboard()
 
         return SendMessage(
-            text="Привет это очень большой тескст", user_id=user_uid, keyboard=keyboard
+            text="Привет это очень большой текст", user_id=user_uid, keyboard=keyboard
         )
-
-
-    async def getHideKeyboardResponse(self,Response: Response):EditMessage
-        data = Response.data
-        data['keyboard'] = None
-
-        return EditMessage.model_validate(data)
-        
