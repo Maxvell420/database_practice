@@ -4,11 +4,16 @@ from .parts.pg import PGParts
 from .secrets import Secrets
 from .parts.vk import VKParts
 from asyncpg.pool import create_pool, Pool
+from src.libs.infra.inlineStorage import InlineStorage
+
 load_dotenv()
+
+
 class Allocator:
     def __init__(self):
         self._secrets: Secrets | None = None
         self._pgDbPool: Pool | None = None
+        self._inlineStorage: InlineStorage | None = None
 
     def secrets(self) -> Secrets:
         if self._secrets is None:
@@ -17,14 +22,19 @@ class Allocator:
 
     async def pgDbPool(self) -> Pool:
         if self._pgDbPool is None:
-            self._pgDbPool =await create_pool(
-            host=self.secrets().pg.host,
-            port=self.secrets().pg.port,
-            user=self.secrets().pg.user,
-            password=self.secrets().pg.password,
-            database=self.secrets().pg.database
-        )
+            self._pgDbPool = await create_pool(
+                host=self.secrets().pg.host,
+                port=self.secrets().pg.port,
+                user=self.secrets().pg.user,
+                password=self.secrets().pg.password,
+                database=self.secrets().pg.database,
+            )
         return self._pgDbPool
+
+    async def inlineStorage(self) -> InlineStorage:
+        if self._inlineStorage is None:
+            self._inlineStorage = InlineStorage()
+        return self._inlineStorage
 
     def loadSecrets(self) -> Secrets:
         return Secrets(pg=self.loadPgParts(), vk=self.loadVkParts())
@@ -32,17 +42,17 @@ class Allocator:
     def loadPgParts(self) -> PGParts:
         # подумать в будущем как лучше сделать это
         return PGParts(
-            host=self.getInvVariable('DB1_HOST'),
-            port=int(self.getInvVariable('DB1_PORT')),
-            user=self.getInvVariable('DB1_USER'),
-            password=self.getInvVariable('DB1_PASSWORD'),
-            database=self.getInvVariable('DB1_DATABASE')
+            host=self.getInvVariable("DB1_HOST"),
+            port=int(self.getInvVariable("DB1_PORT")),
+            user=self.getInvVariable("DB1_USER"),
+            password=self.getInvVariable("DB1_PASSWORD"),
+            database=self.getInvVariable("DB1_DATABASE"),
         )
 
     def loadVkParts(self) -> VKParts:
         return VKParts(
-            token=self.getInvVariable('VK_TOKEN'),
-            group_id=int(self.getInvVariable('GROUP_ID'))
+            token=self.getInvVariable("VK_TOKEN"),
+            group_id=int(self.getInvVariable("GROUP_ID")),
         )
 
     def getInvVariable(self, variable: str) -> str:
@@ -54,4 +64,8 @@ class Allocator:
         return envVariable
 
     def getLogPath(self) -> str:
-        return str(self.getInvVariable('LOG_DIR')) + '/' + str(self.getInvVariable('LOG_FILE_PATH'))
+        return (
+            str(self.getInvVariable("LOG_DIR"))
+            + "/"
+            + str(self.getInvVariable("LOG_FILE_PATH"))
+        )

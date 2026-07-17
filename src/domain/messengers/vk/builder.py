@@ -6,6 +6,7 @@ from src.domain.messengers.vk.useCases.InlineKeyboardBuilder import (
 from src.domain.messengers.repositories.requestRepository import RequestRepository
 from src.domain.messengers.repositories.responseRepository import ResponseRepository
 from src.libs.infra.context import Context
+from src.domain.messengers.repositories.stateRepository import StateRepository
 
 
 class Builder:
@@ -28,3 +29,6 @@ class Builder:
 
     async def buildResponseRepository(self) -> ResponseRepository:
         return ResponseRepository(await self.context.pgDb())
+
+    async def buildStateRepository(self) -> StateRepository:
+        return StateRepository(await self.context.pgDb())
