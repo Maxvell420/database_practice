@@ -15,6 +15,7 @@ from src.domain.messengers.enums.messangerTypes import MessangerTypes
 from src.domain.messengers.vk.entities.inlineKeyboard import InlineKeyboard
 from src.domain.messengers.repositories.stateRepository import StateRepository
 from src.domain.messengers.models.state import State
+from src.domain.messengers.enums.states import States
 
 
 class UpdatesHandler:
@@ -33,23 +34,31 @@ class UpdatesHandler:
             if text == command.value:
                 return await self.handleCommand(command, user_uid)
 
-        state = await self.state_repository.findState(user_uid, MessangerTypes.VK)
+        state = await self.state_repository.findState(str(user_uid), MessangerTypes.VK)
         if not (state is None):
             pass
 
         return SendMessage(text="Текст заглушка", user_id=user_uid, keyboard=None)
 
-    async def handleStateUpdate(self, state: State, text: str, user_uid: int) -> SendMessage:
-        if state.state == States.START:
+    async def handleStateUpdate(
+        self, state: State, text: str, user_uid: str
+    ) -> SendMessage:
+        if state.state == States.SEARCH_RADIATION:
+            return SendMessage(
+                text="Это сообщение от стейта", user_id=user_uid, keyboard=None
+            )
 
-    async def handleCommand(self, command: Commands, user_uid: int) -> SendMessage:
+        else:
+            raise ValueError(f"Unknown state: {state.state}")
+
+    async def handleCommand(self, command: Commands, user_uid: str) -> SendMessage:
         if command == Commands.START:
             return await self.handleStart(user_uid)
         else:
             raise ValueError(f"Unknown command: {command}")
 
     async def handleMessageEvent(
-        self, payload: Payload, user_uid: int, message_uid: int
+        self, payload: Payload, user_uid: str, message_uid: int
     ) -> object:
 
         if payload.action == Actions.SEARCH_RADIATION:
@@ -63,10 +72,17 @@ class UpdatesHandler:
         self, user_uid: int, response_uid: int
     ) -> EditMessage:
         response = EditMessage(
-            text="Измененное сообщение",
+            text="Введите адрес по которому будет проводиться поиск солнечной радиации",
             peer_id=user_uid,
             message_id=response_uid,
         )
+        state = State(
+            id=None,
+            user_id=user_uid,
+            state=States.SEARCH_RADIATION,
+            messenger_type=MessangerTypes.VK,
+        )
+        await self.state_repository.persit(state)
         return response
 
     async def getStartKeyboard(self) -> InlineKeyboard:
@@ -80,9 +96,11 @@ class UpdatesHandler:
         await self.keyboard_builder.addRowToKeyboard()
         return await self.keyboard_builder.buildInlineKeyboard()
 
-    async def handleStart(self, user_uid: int) -> SendMessage:
+    async def handleStart(self, user_uid: str) -> SendMessage:
         keyboard = await self.getStartKeyboard()
 
         return SendMessage(
-            text="Привет это очень большой текст", user_id=user_uid, keyboard=keyboard
+            text="Привет это очень большой текст",
+            user_id=int(user_uid),
+            keyboard=keyboard,
         )

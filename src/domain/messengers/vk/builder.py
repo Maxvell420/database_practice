@@ -19,6 +19,7 @@ class Builder:
         return UpdatesHandler(
             await self.buildInlineKeyboardBuilder(),
             await self.buildResponseRepository(),
+            await self.buildStateRepository(),
         )
 
     async def buildInlineKeyboardBuilder(self) -> InlineKeyboardBuilder:

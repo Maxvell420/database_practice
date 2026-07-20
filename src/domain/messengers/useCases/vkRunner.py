@@ -45,6 +45,7 @@ class VKRunner:
 
     async def processNewUpdates(self):
         for request_id, update in list[tuple[int, Update]](self.new_updates.items()):
+            # вот это вот вынести в отдельный обработчик
             if update.type == UpdateType.MESSAGE_NEW:
                 message_new = update.getMessageNewUpdate()
                 new_response = await self.vk_facade.handleNewMessage(
