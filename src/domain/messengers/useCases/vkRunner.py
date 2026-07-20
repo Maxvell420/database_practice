@@ -41,6 +41,8 @@ class VKRunner:
         updates = await self.vk_client.getUpdates()
         for update in updates:
             request_id = await self.updates_service.registerUpdate(update)
+            if request_id is None:
+                continue
             self.new_updates[request_id] = update
 
     async def processNewUpdates(self):
@@ -50,7 +52,7 @@ class VKRunner:
                 message_new = update.getMessageNewUpdate()
                 new_response = await self.vk_facade.handleNewMessage(
                     message_new.message.text,
-                    message_new.message.from_id,
+                    str(message_new.message.from_id),
                 )
 
                 response_id = await self.response_service.registerSendMessage(
@@ -67,7 +69,7 @@ class VKRunner:
                     raise ValueError("Conversation message ID is None")
                 new_response = await self.vk_facade.handleMessageEvent(
                     message_event.object.payload,
-                    message_event.object.user_id,
+                    str(message_event.object.user_id),
                     message_event.object.conversation_message_id,
                 )
 

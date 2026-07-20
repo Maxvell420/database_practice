@@ -10,7 +10,6 @@ from src.domain.messengers.vk.values.editMessage import EditMessage
 from src.domain.messengers.repositories.responseRepository import ResponseRepository
 from src.domain.messengers.vk.entities.payload import Payload
 from src.domain.messengers.vk.enums.actions import Actions
-from src.domain.messengers.vk.values.editMessage import EditMessage
 from src.domain.messengers.enums.messangerTypes import MessangerTypes
 from src.domain.messengers.vk.entities.inlineKeyboard import InlineKeyboard
 from src.domain.messengers.repositories.stateRepository import StateRepository
@@ -29,29 +28,30 @@ class UpdatesHandler:
         self.response_repository = response_repository
         self.state_repository = state_repository
 
-    async def handleNewMessage(self, text: str, user_uid: int) -> SendMessage:
+    async def handleNewMessage(self, text: str, user_uid: str) -> SendMessage:
         for command in Commands:
             if text == command.value:
                 return await self.handleCommand(command, user_uid)
 
-        state = await self.state_repository.findState(str(user_uid), MessangerTypes.VK)
+        state = await self.state_repository.findState(user_uid, MessangerTypes.VK)
         if not (state is None):
             pass
 
-        return SendMessage(text="Текст заглушка", user_id=user_uid, keyboard=None)
+        return SendMessage(text="Текст заглушка", user_uid=user_uid, keyboard=None)
 
     async def handleStateUpdate(
         self, state: State, text: str, user_uid: str
     ) -> SendMessage:
         if state.state == States.SEARCH_RADIATION:
             return SendMessage(
-                text="Это сообщение от стейта", user_id=user_uid, keyboard=None
+                text="Это сообщение от стейта", user_uid=user_uid, keyboard=None
             )
 
         else:
             raise ValueError(f"Unknown state: {state.state}")
 
     async def handleCommand(self, command: Commands, user_uid: str) -> SendMessage:
+        await self.state_repository.deleteStates(user_uid, MessangerTypes.VK)
         if command == Commands.START:
             return await self.handleStart(user_uid)
         else:
@@ -60,7 +60,7 @@ class UpdatesHandler:
     async def handleMessageEvent(
         self, payload: Payload, user_uid: str, message_uid: int
     ) -> object:
-
+        await self.state_repository.deleteStates(user_uid, MessangerTypes.VK)
         if payload.action == Actions.SEARCH_RADIATION:
             return await self.handleSearchRadiation(user_uid, message_uid)
         else:
@@ -69,16 +69,16 @@ class UpdatesHandler:
         raise ValueError(f"Unknown payload: {payload}")
 
     async def handleSearchRadiation(
-        self, user_uid: int, response_uid: int
+        self, user_uid: str, response_uid: int
     ) -> EditMessage:
         response = EditMessage(
             text="Введите адрес по которому будет проводиться поиск солнечной радиации",
-            peer_id=user_uid,
+            user_uid=user_uid,
             message_id=response_uid,
         )
         state = State(
             id=None,
-            user_id=user_uid,
+            user_uid=user_uid,
             state=States.SEARCH_RADIATION,
             messenger_type=MessangerTypes.VK,
         )
@@ -101,6 +101,6 @@ class UpdatesHandler:
 
         return SendMessage(
             text="Привет это очень большой текст",
-            user_id=int(user_uid),
+            user_uid=user_uid,
             keyboard=keyboard,
         )

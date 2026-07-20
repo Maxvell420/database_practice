@@ -20,6 +20,13 @@ class StateRepository(BaseRepository):
                 dumps(state.data),
             )
 
+    async def deleteStates(self, user_uid: str, messenger_type: MessangerTypes) -> None:
+        sql = """
+            DELETE FROM users_states WHERE user_uid = $1 AND messenger_type = $2
+        """
+        async with self.connection() as conn:
+            await conn.execute(sql, user_uid, messenger_type.value)
+
     async def findState(
         self, user_uid: str, messenger_type: MessangerTypes
     ) -> State | None:

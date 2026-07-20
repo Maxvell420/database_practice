@@ -10,12 +10,12 @@ class Facade:
         self.logger = logger
         self.builder = Builder(context, logger)
 
-    async def handleNewMessage(self, text: str, user_uid: int) -> SendMessage:
+    async def handleNewMessage(self, text: str, user_uid: str) -> SendMessage:
         useCase = await self.builder.buildUpdatesHandler()
         return await useCase.handleNewMessage(text, user_uid)
 
     async def handleMessageEvent(
-        self, payload: Payload, user_uid: int, request_id: int
+        self, payload: Payload, user_uid: str, request_id: int
     ) -> object:
         useCase = await self.builder.buildUpdatesHandler()
         return await useCase.handleMessageEvent(payload, user_uid, request_id)

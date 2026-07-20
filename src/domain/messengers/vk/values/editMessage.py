@@ -7,5 +7,5 @@ class EditMessage(BaseModel):
     text: str
     # тут еще и простая клавиатура , но пока только inline
     keyboard: None | InlineKeyboard = None
-    peer_id: int
+    user_uid: str
     message_id: int
