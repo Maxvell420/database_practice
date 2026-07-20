@@ -5,7 +5,8 @@ from src.domain.messengers.enums.states import States
 
 
 class State(BaseModel):
-    user_id: int
+    id: int | None = None
+    user_uid: str
     state: States
     messenger_type: MessangerTypes
     data: dict | None = None

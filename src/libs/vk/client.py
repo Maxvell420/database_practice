@@ -84,11 +84,11 @@ class Client:
 
     # TODO передавать обьект
     async def sendMessage(
-        self, user_id: int, message: str, keyboard: InlineKeyboard | None = None
+        self, user_uid: str, message: str, keyboard: InlineKeyboard | None = None
     ) -> SendMessageDataResponse:
         data = {
             "message": message,
-            "user_id": user_id,
+            "user_id": int(user_uid),
         }
         if keyboard is not None:
             data["keyboard"] = keyboard.model_dump_json(exclude_none=True)
@@ -97,14 +97,14 @@ class Client:
 
     async def editMessage(
         self,
-        peer_id: int,
+        user_uid: str,
         message: str,
         message_id: int,
         keyboard: InlineKeyboard | None = None,
     ):
         data = {
             "message": message,
-            "peer_id": peer_id,
+            "peer_id": int(user_uid),
             "cmid": message_id,
         }
 

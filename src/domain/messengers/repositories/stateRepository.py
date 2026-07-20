@@ -7,35 +7,40 @@ from json import dumps
 
 
 class StateRepository(BaseRepository):
-    async def createState(
-        self,
-        user_id: int,
-        state: States,
-        messenger_type: MessangerTypes,
-        data: dict | None = None,
-    ) -> None:
+    async def persit(self, state: State) -> None:
         sql = """
-            INSERT INTO states (user_id, state, messenger_type, data) VALUES ($1, $2, $3, $4)
+            INSERT INTO users_states (user_uid, state, messenger_type, data) VALUES ($1, $2, $3, $4)
         """
         async with self.connection() as conn:
             await conn.execute(
-                sql, user_id, state.value, messenger_type.value, dumps(data)
+                sql,
+                state.user_uid,
+                state.state.value,
+                state.messenger_type.value,
+                dumps(state.data),
             )
 
-    async def findState(
-        self, user_id: int, messenger_type: MessangerTypes
-    ) -> State | None:
+    async def deleteStates(self, user_uid: str, messenger_type: MessangerTypes) -> None:
         sql = """
-            SELECT * FROM states WHERE user_id = $1 AND messenger_type = $2
+            DELETE FROM users_states WHERE user_uid = $1 AND messenger_type = $2
         """
         async with self.connection() as conn:
-            state = await conn.fetchrow(sql, user_id, messenger_type.value)
+            await conn.execute(sql, user_uid, messenger_type.value)
+
+    async def findState(
+        self, user_uid: str, messenger_type: MessangerTypes
+    ) -> State | None:
+        sql = """
+            SELECT * FROM users_states WHERE user_uid = $1 AND messenger_type = $2
+        """
+        async with self.connection() as conn:
+            state = await conn.fetchrow(sql, user_uid, messenger_type.value)
             if state is None:
                 return None
             data = loads(state["data"])
             return State.model_validate(
                 {
-                    "user_id": state["user_id"],
+                    "user_uid": state["user_uid"],
                     "state": state["state"],
                     "messenger_type": state["messenger_type"],
                     "data": data,

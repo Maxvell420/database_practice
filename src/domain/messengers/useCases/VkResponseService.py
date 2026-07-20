@@ -22,7 +22,7 @@ class VkResponseService:
             messenger_type=MessangerTypes.VK.value,
             request_id=request_id,
             data=response.model_dump_json(),
-            user_uuid=str(response.user_id),
+            user_uuid=response.user_uid,
         )
 
     async def registerMessageEdit(self, response: EditMessage, request_id: int) -> int:
@@ -30,7 +30,7 @@ class VkResponseService:
             messenger_type=MessangerTypes.VK.value,
             request_id=request_id,
             data=response.model_dump_json(),
-            user_uuid=str(response.peer_id),
+            user_uuid=response.user_uid,
         )
 
     async def updateResponseUuid(self, response_id: int, uuid: str) -> None:
@@ -38,7 +38,7 @@ class VkResponseService:
 
     async def processSendMessage(self, response_id: int, response: SendMessage) -> None:
         client_response = await self.vk_client.sendMessage(
-            response.user_id, response.text, response.keyboard
+            response.user_uid, response.text, response.keyboard
         )
 
         await self.response_repository.updateResponseUuid(
@@ -47,5 +47,5 @@ class VkResponseService:
 
     async def processMessageEdit(self, response: EditMessage) -> None:
         await self.vk_client.editMessage(
-            response.peer_id, response.text, response.message_id, response.keyboard
+            response.user_uid, response.text, response.message_id, response.keyboard
         )

@@ -35,8 +35,11 @@ CREATE TABLE IF NOT EXISTS messengers_responses(
 );
 
 CREATE TABLE IF NOT EXISTS users_states(
+    id SERIAL PRIMARY KEY,
     messenger_type INT NOT NULL,
-    user_uuid VARCHAR(36) NOT NULL,
+    user_uid VARCHAR(36) NOT NULL,
     state int NOT NULL,
-    data JSON NOT NULL
+    data JSON NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    unique(messenger_type, user_uuid)
 );

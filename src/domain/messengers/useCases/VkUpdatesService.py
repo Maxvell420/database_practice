@@ -13,7 +13,7 @@ class VkUpdatesService:
         self.request_repository = request_repository
         self.logger = logger
 
-    async def registerUpdate(self, update: Update) -> int:
+    async def registerUpdate(self, update: Update) -> int | None:
         request_id = None
         if update.type == UpdateType.MESSAGE_NEW:
             message_new = update.getMessageNewUpdate()
@@ -31,6 +31,9 @@ class VkUpdatesService:
                 user_uuid=str(message_event.object.user_id),
                 request_uuid=update.event_id,
             )
+        elif update.type == UpdateType.MESSAGE_EDIT:
+            # я не понимаю почему это приходит, но пока пусть будет так
+            return None
         else:
             if self.logger is not None:
                 await self.logger.error(f"Update type: {update.type} is not supported")
