@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS messengers_requests(
     messenger_type INT NOT NULL,
     data JSON NOT NULL,
     request_uuid VARCHAR(50) NOT NULL,
-    user_uid VARCHAR(36) DEFAULT NULL,
+    user_uuid VARCHAR(36) DEFAULT NULL,
     processed_at TIMESTAMP DEFAULT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

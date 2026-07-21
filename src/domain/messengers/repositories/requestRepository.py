@@ -8,7 +8,7 @@ class RequestRepository(BaseRepository):
         self, messenger_type: int, data: str, user_uuid: str, request_uuid: str
     ) -> int:
         sql = """
-            INSERT INTO messengers_requests (messenger_type, data, user_uid, request_uuid) VALUES ($1, $2, $3, $4) RETURNING *
+            INSERT INTO messengers_requests (messenger_type, data, user_uuid, request_uuid) VALUES ($1, $2, $3, $4) RETURNING *
         """
         async with self.connection() as conn:
             await conn.execute(sql, messenger_type, data, user_uuid, request_uuid)
