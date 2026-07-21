@@ -1,9 +1,25 @@
+from json import loads
+
 from src.libs.infra.baseRepository import BaseRepository
 from src.domain.messengers.models.request import Request
 from src.domain.messengers.enums.messangerTypes import MessangerTypes
 
 
 class RequestRepository(BaseRepository):
+    def _toRequest(self, request) -> Request:
+        data = request["data"]
+        if isinstance(data, str):
+            data = loads(data)
+        return Request.model_validate(
+            {
+                "id": request["id"],
+                "messenger_type": request["messenger_type"],
+                "data": data,
+                "user_uuid": request["user_uuid"],
+                "request_uuid": request["request_uuid"],
+            }
+        )
+
     async def createRequest(
         self, messenger_type: int, data: str, user_uuid: str, request_uuid: str
     ) -> int:
@@ -20,6 +36,26 @@ class RequestRepository(BaseRepository):
                 raise Exception("Failed to create request")
             return int(id)
 
+    async def listUnprocessedRequests(self) -> list[Request]:
+        sql = """
+            SELECT * FROM messengers_requests WHERE processed_at IS NULL
+        """
+
+        data: list[Request] = []
+        async with self.connection() as conn:
+            requests = await conn.fetch(sql)
+
+            for request in requests:
+                data.append(self._toRequest(request))
+            return data
+
+    async def processRequest(self, request_id: int) -> None:
+        sql = """
+            UPDATE messengers_requests SET processed_at = NOW() WHERE id = $1
+        """
+        async with self.connection() as conn:
+            await conn.execute(sql, request_id)
+
     async def getRequestByUuid(
         self, request_uuid: str, messenger_type: MessangerTypes
     ) -> Request:
@@ -30,10 +66,4 @@ class RequestRepository(BaseRepository):
             request = await conn.fetchrow(sql, request_uuid, messenger_type.value)
             if request is None:
                 raise Exception("Request not found")
-            return Request(
-                id=request["id"],
-                messenger_type=request["messenger_type"],
-                data=request["data"],
-                user_uuid=request["user_uuid"],
-                request_uuid=request["request_uuid"],
-            )
+            return self._toRequest(request)

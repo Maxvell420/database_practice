@@ -15,12 +15,10 @@ class VKRunner:
         response_service: VkResponseService,
         vk_client: VKClient,
         vk_facade: VKFacade,
-        logger: Logger | None = None,
     ):
         self.updates_service = updates_service
         self.response_service = response_service
         self.vk_client = vk_client
-        self.logger: Logger | None = logger
         self.new_updates: dict[int, Update] = {}
         self.new_responses: list[VkPayload] = []
         self.vk_facade = vk_facade
@@ -28,29 +26,26 @@ class VKRunner:
     # получаю новые обновления в первом действии
     # обрабатываю их во втором действии и сохраняю на отправку
     # отправляю ответы в третьем действии
-    async def run(self):
-        while True:
-            await self.getNewUpdates()
-            await self.processNewUpdates()
-            await self.processNewResponses()
+    async def load(self) -> None:
+        self.new_updates = await self.updates_service.getUnprocessedUpdates()
 
-    async def getNewUpdates(self):
+    async def job(self) -> None:
+        await self.getNewUpdates()
+        await self.processNewUpdates()
+        await self.processNewResponses()
+
+    async def getNewUpdates(self) -> None:
         # тут прокинуть время longpoll
-        updates = await self.vk_client.getUpdates()
-        for update in updates:
-            request_id = await self.updates_service.registerUpdate(update)
-            if request_id is None:
-                continue
-            self.new_updates[request_id] = update
+        self.new_updates = await self.updates_service.getNewUpdates()
 
-    async def processNewUpdates(self):
+    async def processNewUpdates(self) -> None:
         for request_id, update in list[tuple[int, Update]](self.new_updates.items()):
             # вот это вот вынести в отдельный обработчик
             response = await self.vk_facade.handleNewUpdate(update)
             self.new_responses.append(response)
             self.new_updates.pop(request_id)
 
-    async def processNewResponses(self):
+    async def processNewResponses(self) -> None:
         for response in self.new_responses:
             await self.response_service.registerVkResponse(response)
             self.new_responses.remove(response)

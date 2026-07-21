@@ -1,3 +1,8 @@
+DROP TABLE IF EXISTS messengers_requests;
+DROP TABLE IF EXISTS users_states;
+DROP TABLE IF EXISTS nasapower_geohashes_data;
+DROP TABLE IF EXISTS geohashes;
+
 CREATE TABLE IF NOT EXISTS geohashes(
     id SERIAL PRIMARY KEY,
     geohash char(5) not null unique
@@ -20,6 +25,7 @@ CREATE TABLE IF NOT EXISTS messengers_requests(
     data JSON NOT NULL,
     request_uuid VARCHAR(50) NOT NULL,
     user_uuid VARCHAR(36) DEFAULT NULL,
+    processed_at TIMESTAMP DEFAULT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -30,5 +36,5 @@ CREATE TABLE IF NOT EXISTS users_states(
     state int NOT NULL,
     data JSON NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    unique(messenger_type, user_uuid)
+    unique(messenger_type, user_uid)
 );

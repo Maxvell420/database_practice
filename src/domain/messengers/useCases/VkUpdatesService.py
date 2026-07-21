@@ -4,14 +4,38 @@ from src.libs.vk.enums.updateType import UpdateType
 from src.domain.messengers.enums.messangerTypes import MessangerTypes
 from src.libs.infra.logger import Logger
 from src.domain.messengers.models.request import Request
+from src.libs.vk.client import Client as VKClient
 
 
 class VkUpdatesService:
     def __init__(
-        self, request_repository: RequestRepository, logger: Logger | None = None
+        self,
+        request_repository: RequestRepository,
+        client: VKClient,
+        logger: Logger | None = None,
     ):
         self.request_repository = request_repository
+        self.client = client
         self.logger = logger
+
+    async def getNewUpdates(self) -> dict[int, Update]:
+        updates = await self.client.getUpdates()
+        new_updates: dict[int, Update] = {}
+
+        for update in updates:
+            request_id = await self.registerUpdate(update)
+            if request_id is None:
+                continue
+            new_updates[request_id] = update
+        return new_updates
+
+    async def getUnprocessedUpdates(self) -> dict[int, Update]:
+        requests = await self.request_repository.listUnprocessedRequests()
+        unprocessed_updates: dict[int, Update] = {}
+        for request in requests:
+            update = Update.model_validate(request.data)
+            unprocessed_updates[request.id] = update
+        return unprocessed_updates
 
     async def registerUpdate(self, update: Update) -> int | None:
         request_id = None
