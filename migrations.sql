@@ -23,17 +23,6 @@ CREATE TABLE IF NOT EXISTS messengers_requests(
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS messengers_responses(
-    id SERIAL PRIMARY KEY,
-    messenger_type INT NOT NULL,
-    request_id INT NOT NULL,
-    response_uuid VARCHAR(36) DEFAULT NULL,
-    data JSON NOT NULL,
-    user_uuid VARCHAR(36) DEFAULT NULL,
-    status INT NOT NULL DEFAULT 1,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
 CREATE TABLE IF NOT EXISTS users_states(
     id SERIAL PRIMARY KEY,
     messenger_type INT NOT NULL,

@@ -1,12 +1,13 @@
+from src.domain.messengers.repositories import stateRepository
 from src.libs.infra.logger import Logger
 from src.domain.messengers.vk.useCases.updatesHandler import UpdatesHandler
 from src.domain.messengers.vk.useCases.InlineKeyboardBuilder import (
     InlineKeyboardBuilder,
 )
 from src.domain.messengers.repositories.requestRepository import RequestRepository
-from src.domain.messengers.repositories.responseRepository import ResponseRepository
 from src.libs.infra.context import Context
 from src.domain.messengers.repositories.stateRepository import StateRepository
+from src.domain.messengers.vk.useCases.commandsHandler import CommandsHandler
 
 
 class Builder:
@@ -18,8 +19,14 @@ class Builder:
     async def buildUpdatesHandler(self) -> UpdatesHandler:
         return UpdatesHandler(
             await self.buildInlineKeyboardBuilder(),
-            await self.buildResponseRepository(),
             await self.buildStateRepository(),
+            await self.buildCommandsHandler(),
+        )
+
+    async def buildCommandsHandler(self) -> CommandsHandler:
+        return CommandsHandler(
+            await self.buildStateRepository(),
+            await self.buildInlineKeyboardBuilder(),
         )
 
     async def buildInlineKeyboardBuilder(self) -> InlineKeyboardBuilder:
@@ -27,9 +34,6 @@ class Builder:
 
     async def buildRequestRepository(self) -> RequestRepository:
         return RequestRepository(await self.context.pgDb())
-
-    async def buildResponseRepository(self) -> ResponseRepository:
-        return ResponseRepository(await self.context.pgDb())
 
     async def buildStateRepository(self) -> StateRepository:
         return StateRepository(await self.context.pgDb())

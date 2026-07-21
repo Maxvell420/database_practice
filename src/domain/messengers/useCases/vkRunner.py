@@ -1,15 +1,13 @@
 from src.libs.vk.client import Client as VKClient
-from src.libs.vk.enums.updateType import UpdateType
 from src.libs.vk.responses.update import Update
 from src.libs.infra.logger import Logger
-from src.domain.messengers.vk.values.sendMessage import SendMessage
 from src.domain.messengers.vk.facade import Facade as VKFacade
 from src.domain.messengers.useCases.VkUpdatesService import VkUpdatesService
-from src.domain.messengers.useCases.VkResponseService import VkResponseService
-from src.domain.messengers.vk.values.editMessage import EditMessage
+from src.domain.messengers.vk.values.vkPayload import VkPayload
+from src.domain.messengers.useCases.vkResponseService import VkResponseService
 
 
-# тут нужно сделать загрузку не обработанных запросов и ответов и обработку их если демон перезапустился
+# тут нужно сделать загрузку не обработанных запросов и обработку их если демон перезапустился
 class VKRunner:
     def __init__(
         self,
@@ -24,7 +22,7 @@ class VKRunner:
         self.vk_client = vk_client
         self.logger: Logger | None = logger
         self.new_updates: dict[int, Update] = {}
-        self.new_responses: dict[int, SendMessage | EditMessage] = {}
+        self.new_responses: list[VkPayload] = []
         self.vk_facade = vk_facade
 
     # получаю новые обновления в первом действии
@@ -48,50 +46,11 @@ class VKRunner:
     async def processNewUpdates(self):
         for request_id, update in list[tuple[int, Update]](self.new_updates.items()):
             # вот это вот вынести в отдельный обработчик
-            if update.type == UpdateType.MESSAGE_NEW:
-                message_new = update.getMessageNewUpdate()
-                new_response = await self.vk_facade.handleNewMessage(
-                    message_new.message.text,
-                    str(message_new.message.from_id),
-                )
-
-                response_id = await self.response_service.registerSendMessage(
-                    new_response, request_id
-                )
-                self.new_responses[response_id] = new_response
-            elif update.type == UpdateType.MESSAGE_EVENT:
-                message_event = update.getMessageEventUpdate()
-                if message_event.object.payload is None:
-                    raise ValueError("Payload is None")
-                if message_event.object.user_id is None:
-                    raise ValueError("User ID is None")
-                if message_event.object.conversation_message_id is None:
-                    raise ValueError("Conversation message ID is None")
-                new_response = await self.vk_facade.handleMessageEvent(
-                    message_event.object.payload,
-                    str(message_event.object.user_id),
-                    message_event.object.conversation_message_id,
-                )
-
-                if isinstance(new_response, EditMessage):
-                    response_id = await self.response_service.registerMessageEdit(
-                        new_response, request_id
-                    )
-                    self.new_responses[response_id] = new_response
-                else:
-                    raise ValueError("Unknown response type")
+            response = await self.vk_facade.handleNewUpdate(update)
+            self.new_responses.append(response)
             self.new_updates.pop(request_id)
 
     async def processNewResponses(self):
-        for response_id, response in list[tuple[int, object]](
-            self.new_responses.items()
-        ):
-
-            # возможно тут стоит завести тип отдельный для всех responses и не вызывать методы для каждого типа
-            if isinstance(response, SendMessage):
-                await self.response_service.processSendMessage(response_id, response)
-
-            elif isinstance(response, EditMessage):
-                await self.response_service.processMessageEdit(response)
-
-            self.new_responses.pop(response_id)
+        for response in self.new_responses:
+            await self.response_service.registerVkResponse(response)
+            self.new_responses.remove(response)
