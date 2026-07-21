@@ -1,11 +1,10 @@
 from src.domain.messengers.repositories.requestRepository import RequestRepository
-from src.domain.messengers.repositories.responseRepository import ResponseRepository
 from src.libs.vk.client import Client as VKClient
 from src.libs.infra.logger import Logger
 from src.domain.messengers.useCases.vkRunner import VKRunner
 from src.libs.infra.context import Context
 from src.domain.messengers.useCases.VkUpdatesService import VkUpdatesService
-from src.domain.messengers.useCases.VkResponseService import VkResponseService
+from src.domain.messengers.useCases.vkResponseService import VkResponseService
 from src.domain.messengers.vk.facade import Facade as VKFacade
 
 
@@ -35,7 +34,6 @@ class Builder:
         self, logger: Logger | None = None
     ) -> VkResponseService:
         return VkResponseService(
-            await self.buildResponseRepository(),
             await self.buildVKClient(logger),
             logger,
         )
@@ -47,6 +45,3 @@ class Builder:
 
     async def buildRequestRepository(self) -> RequestRepository:
         return RequestRepository(await self.context.pgDb())
-
-    async def buildResponseRepository(self) -> ResponseRepository:
-        return ResponseRepository(await self.context.pgDb())

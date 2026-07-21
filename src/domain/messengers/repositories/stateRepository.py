@@ -1,9 +1,7 @@
 from src.libs.infra.baseRepository import BaseRepository
 from src.domain.messengers.enums.messangerTypes import MessangerTypes
-from src.domain.messengers.enums.states import States
 from src.domain.messengers.models.state import State
-from json import loads
-from json import dumps
+from json import loads, dumps
 
 
 class StateRepository(BaseRepository):
