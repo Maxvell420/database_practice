@@ -19,13 +19,16 @@ class Builder:
             await self.buildVkResponseService(logger=logger),
             await self.buildVKClient(logger=logger),
             await self.buildVKFacade(logger=logger),
-            logger,
         )
 
     async def buildVkUpdatesService(
         self, logger: Logger | None = None
     ) -> VkUpdatesService:
-        return VkUpdatesService(await self.buildRequestRepository(), logger)
+        return VkUpdatesService(
+            await self.buildRequestRepository(),
+            await self.buildVKClient(logger=logger),
+            logger,
+        )
 
     async def buildVKFacade(self, logger: Logger | None = None) -> VKFacade:
         return VKFacade(self.context, logger)

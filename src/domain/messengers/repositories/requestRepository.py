@@ -8,7 +8,7 @@ class RequestRepository(BaseRepository):
         self, messenger_type: int, data: str, user_uuid: str, request_uuid: str
     ) -> int:
         sql = """
-            INSERT INTO messengers_requests (messenger_type, data, user_uuid, request_uuid) VALUES ($1, $2, $3, $4) RETURNING *
+            INSERT INTO messengers_requests (messenger_type, data, user_uid, request_uuid) VALUES ($1, $2, $3, $4) RETURNING *
         """
         async with self.connection() as conn:
             await conn.execute(sql, messenger_type, data, user_uuid, request_uuid)
@@ -19,6 +19,32 @@ class RequestRepository(BaseRepository):
             if id is None:
                 raise Exception("Failed to create request")
             return int(id)
+
+    async def listUnprocessedRequests(self) -> list[Request]:
+        sql = """
+            SELECT * FROM messengers_requests WHERE processed_at IS NULL
+        """
+
+        data: list[Request] = []
+        async with self.connection() as conn:
+            requests = await conn.fetch(sql)
+            return [
+                Request(
+                    id=request["id"],
+                    messenger_type=request["messenger_type"],
+                    data=request["data"],
+                    user_uuid=request["user_uuid"],
+                    request_uuid=request["request_uuid"],
+                )
+                for request in requests
+            ]
+
+    async def processRequest(self, request_id: int) -> None:
+        sql = """
+            UPDATE messengers_requests SET processed_at = NOW() WHERE id = $1
+        """
+        async with self.connection() as conn:
+            await conn.execute(sql, request_id)
 
     async def getRequestByUuid(
         self, request_uuid: str, messenger_type: MessangerTypes
