@@ -5,7 +5,6 @@ from src.domain.messengers.enums.messangerTypes import MessangerTypes
 from src.libs.infra.logger import Logger
 from src.domain.messengers.models.request import Request
 from src.libs.vk.client import Client as VKClient
-import json
 
 
 class VkUpdatesService:
@@ -34,7 +33,7 @@ class VkUpdatesService:
         requests = await self.request_repository.listUnprocessedRequests()
         unprocessed_updates: dict[int, Update] = {}
         for request in requests:
-            update = Update.model_validate_json(json.dumps(request.data))
+            update = Update.model_validate(request.data)
             unprocessed_updates[request.id] = update
         return unprocessed_updates
 
