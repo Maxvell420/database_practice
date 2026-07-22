@@ -9,6 +9,7 @@ from src.domain.messengers.repositories.stateRepository import StateRepository
 from src.domain.messengers.vk.useCases.commandsHandler import CommandsHandler
 from src.domain.messengers.vk.useCases.inlineStorage import InlineStorage
 from src.domain.messengers.vk.storageKeyboardHandler import StorageKeyboardHandler
+from src.libs.nspd.client import Client as NspdClient
 
 
 class Builder:
@@ -25,6 +26,7 @@ class Builder:
             await self.buildCommandsHandler(),
             await self.buildStorageKeyboardHandler(),
             await self.buildInlineStorage(),
+            await self.buildNspdClient(),
         )
 
     # TODO: подумать...
@@ -32,6 +34,9 @@ class Builder:
         if self.inlineStorage is None:
             self.inlineStorage = InlineStorage()
         return self.inlineStorage
+
+    async def buildNspdClient(self) -> NspdClient:
+        return NspdClient(self.context.logger())
 
     async def buildCommandsHandler(self) -> CommandsHandler:
         return CommandsHandler(
