@@ -5,17 +5,19 @@ from src.domain.messengers.vk.values.sendMessage import SendMessage
 from src.domain.messengers.vk.useCases.InlineKeyboardBuilder import (
     InlineKeyboardBuilder,
 )
+from src.domain.messengers.vk.entities.inlineKeyboard import InlineKeyboard
 from src.domain.messengers.vk.enums.InlineButtonActionTypes import (
     InlineButtonActionTypes,
 )
 from src.domain.messengers.vk.entities.payload import Payload
 from src.domain.messengers.vk.enums.actions import Actions
-from src.domain.messengers.vk.entities.inlineKeyboard import InlineKeyboard
 
 
 class CommandsHandler:
     def __init__(
-        self, state_repository: StateRepository, keyboard_builder: InlineKeyboardBuilder
+        self,
+        state_repository: StateRepository,
+        keyboard_builder: InlineKeyboardBuilder,
     ):
         self.state_repository = state_repository
         self.keyboard_builder = keyboard_builder

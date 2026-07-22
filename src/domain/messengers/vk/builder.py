@@ -1,4 +1,3 @@
-from src.domain.messengers.repositories import stateRepository
 from src.libs.infra.logger import Logger
 from src.domain.messengers.vk.useCases.updatesHandler import UpdatesHandler
 from src.domain.messengers.vk.useCases.InlineKeyboardBuilder import (
@@ -8,6 +7,8 @@ from src.domain.messengers.repositories.requestRepository import RequestReposito
 from src.libs.infra.context import Context
 from src.domain.messengers.repositories.stateRepository import StateRepository
 from src.domain.messengers.vk.useCases.commandsHandler import CommandsHandler
+from src.domain.messengers.vk.useCases.inlineStorage import InlineStorage
+from src.domain.messengers.vk.storageKeyboardHandler import StorageKeyboardHandler
 
 
 class Builder:
@@ -15,19 +16,30 @@ class Builder:
         self.logger = logger
         self.context = context
         # TODO: подумать насчет состояний, возможно UpdatesHandler не надо создавать каждый раз
+        self.inlineStorage = None
 
     async def buildUpdatesHandler(self) -> UpdatesHandler:
         return UpdatesHandler(
             await self.buildInlineKeyboardBuilder(),
             await self.buildStateRepository(),
             await self.buildCommandsHandler(),
+            await self.buildStorageKeyboardHandler(),
+            await self.buildInlineStorage(),
         )
+
+    # TODO: подумать...
+    async def buildInlineStorage(self) -> InlineStorage:
+        if self.inlineStorage is None:
+            self.inlineStorage = InlineStorage()
+        return self.inlineStorage
 
     async def buildCommandsHandler(self) -> CommandsHandler:
         return CommandsHandler(
-            await self.buildStateRepository(),
-            await self.buildInlineKeyboardBuilder(),
+            await self.buildStateRepository(), await self.buildInlineKeyboardBuilder()
         )
+
+    async def buildStorageKeyboardHandler(self) -> StorageKeyboardHandler:
+        return StorageKeyboardHandler(await self.buildInlineKeyboardBuilder())
 
     async def buildInlineKeyboardBuilder(self) -> InlineKeyboardBuilder:
         return InlineKeyboardBuilder()

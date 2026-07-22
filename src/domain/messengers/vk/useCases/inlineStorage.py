@@ -1,5 +1,6 @@
 from src.domain.messengers.vk.entities.storageItem import StorageItem
 from src.domain.messengers.enums.messangerTypes import MessangerTypes
+from src.domain.messengers.vk.enums.storageItemTypes import StorageItemTypes
 
 
 class InlineStorage:
@@ -18,3 +19,37 @@ class InlineStorage:
                 )
             return item
         raise ValueError(f"Messenger type not supported: {messenger_type}")
+
+    async def listTestItem(self) -> list[StorageItem]:
+        return [
+            StorageItem.model_validate(
+                {
+                    "type": StorageItemTypes.VK_NPSD,
+                    "data": "test",
+                }
+            ),
+            StorageItem.model_validate(
+                {
+                    "type": StorageItemTypes.VK_NPSD,
+                    "data": "test2",
+                }
+            ),
+            StorageItem.model_validate(
+                {
+                    "type": StorageItemTypes.VK_NPSD,
+                    "data": "test3",
+                }
+            ),
+            StorageItem.model_validate(
+                {
+                    "type": StorageItemTypes.VK_NPSD,
+                    "data": "test4",
+                }
+            ),
+            StorageItem.model_validate(
+                {
+                    "type": StorageItemTypes.VK_NPSD,
+                    "data": "test5",
+                }
+            ),
+        ]
