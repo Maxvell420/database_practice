@@ -17,11 +17,12 @@ class Demon(ABC):
         pass
 
     async def run(self) -> None:
-        try:
-            await self.load()
-            while True:
+        # тут пока не обрабатываем....
+        await self.load()
+        while True:
+            try:
                 await self.job()
-        except Exception as e:
-            await self.logger.error(
-                f"Error running demon: {e} ({datetime.now().strftime('%Y-%m-%d %H:%M:%S')})"
-            )
+            except Exception as e:
+                await self.logger.error(
+                    f"Error running demon: {e} ({datetime.now().strftime('%Y-%m-%d %H:%M:%S')})"
+                )
