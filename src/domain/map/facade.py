@@ -4,8 +4,8 @@ from src.libs.vk.client import Client as VKClient
 from src.libs.nasapower.client import Client as NasaPowerClient
 from src.libs.nspd.client import Client as NspdClient
 from src.domain.map.repositories.nasaPowerRepository import NasaPowerRepository
-from src.libs.vk.vkLogger import VKLogger
-import os
+
+
 class Facade:
 
     # TODO вытаскивать константу из контекста
@@ -13,15 +13,19 @@ class Facade:
     def __init__(self, context: Context):
         self.context = context
         self.builder = Builder()
-        self.vkClient : VKClient | None = None
-        self.nasaPowerClient : NasaPowerClient | None = None
-        self.nspdClient : NspdClient | None = None
-        self.nasaPowerRepository : NasaPowerRepository | None = None    
+        self.vkClient: VKClient | None = None
+        self.nasaPowerClient: NasaPowerClient | None = None
+        self.nspdClient: NspdClient | None = None
+        self.nasaPowerRepository: NasaPowerRepository | None = None
 
     async def buildVKClient(self) -> VKClient:
         if self.vkClient is None:
             logger = self.builder.buildVkLogger(self.context.allocator.getLogPath())
-            self.vkClient = self.builder.buildVKClient(self.context.secrets().vk.token, self.context.secrets().vk.group_id, logger)
+            self.vkClient = self.builder.buildVKClient(
+                self.context.secrets().vk.token,
+                self.context.secrets().vk.group_id,
+                logger,
+            )
         return self.vkClient
 
     async def buildNasaPowerClient(self) -> NasaPowerClient:
@@ -38,5 +42,7 @@ class Facade:
 
     async def buildNasaPowerRepository(self) -> NasaPowerRepository:
         if self.nasaPowerRepository is None:
-            self.nasaPowerRepository = self.builder.buildNasaPowerRepository(await self.context.pgDb())
+            self.nasaPowerRepository = self.builder.buildNasaPowerRepository(
+                await self.context.pgDb()
+            )
         return self.nasaPowerRepository

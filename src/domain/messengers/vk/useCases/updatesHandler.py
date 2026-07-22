@@ -14,6 +14,7 @@ from src.libs.vk.enums.updateType import UpdateType
 from src.domain.messengers.vk.values.vkPayload import VkPayload
 from src.domain.messengers.vk.useCases.inlineStorage import InlineStorage
 from src.domain.messengers.vk.storageKeyboardHandler import StorageKeyboardHandler
+from src.libs.nspd.client import Client as NspdClient
 
 
 # Вот тут можно разбить обработку, но пока так
@@ -25,12 +26,14 @@ class UpdatesHandler:
         commandsHandler: CommandsHandler,
         storageKeyboardHandler: StorageKeyboardHandler,
         inlineStorage: InlineStorage,
+        nspdClient: NspdClient,
     ):
         self.keyboard_builder = keyboard_builder
         self.state_repository = state_repository
         self.commandsHandler = commandsHandler
         self.storageKeyboardHandler = storageKeyboardHandler
         self.inlineStorage = inlineStorage
+        self.nspdClient = nspdClient
 
     async def handleNewUpdate(self, update: Update) -> VkPayload:
         if update.type == UpdateType.MESSAGE_NEW:
@@ -70,6 +73,7 @@ class UpdatesHandler:
         self, state: State, text: str, user_uid: str
     ) -> SendMessage:
         if state.state == States.SEARCH_RADIATION:
+            response = await self.nspdClient.getGeoportalSearch(text)
             # XXX:Вот тут будет запрос по адресу из переменной text
             items = await self.inlineStorage.listTestItem()
             keyboard = await self.storageKeyboardHandler.buildAllPages(items)
