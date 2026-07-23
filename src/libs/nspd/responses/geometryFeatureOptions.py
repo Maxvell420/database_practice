@@ -2,6 +2,5 @@ from pydantic import BaseModel
 
 
 class GeometryFeatureOptions(BaseModel):
-    readable_address: str
-    floor: str | None = None
+    readable_address: str | None = None
     floors: str | None = None

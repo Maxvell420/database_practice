@@ -44,3 +44,10 @@ class StateRepository(BaseRepository):
                     "data": data,
                 }
             )
+
+    async def deleteState(self, state: State) -> None:
+        sql = """
+            DELETE FROM users_states WHERE id = $1
+        """
+        async with self.connection() as conn:
+            await conn.execute(sql, state.id)

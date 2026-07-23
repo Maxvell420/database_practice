@@ -10,7 +10,7 @@ from src.domain.messengers.vk.entities.inlineKeyboard import InlineKeyboard
 from src.domain.messengers.vk.entities.storageItem import StorageItem
 from src.domain.messengers.vk.enums.storageItemTypes import StorageItemTypes
 
-VK_LIMIT_ROW = 2
+VK_LIMIT_ROW = 5
 
 
 class StorageKeyboardHandler:
@@ -35,10 +35,11 @@ class StorageKeyboardHandler:
 
         for item in page_items:
             action = self.getActionByType(item.type)
+            [address, coordinates] = await self.getItemData(item)
             button = await self.keyboard_builder.buildInlineButton(
                 type=InlineButtonActionTypes.CALLBACK,
-                label=str(item.data),
-                payload=Payload(action=action, value=str(item.data)),
+                label=address,
+                payload=Payload(action=action, value=str(coordinates)),
             )
             await self.keyboard_builder.addButtonToRow(button)
             await self.keyboard_builder.addRowToKeyboard()
@@ -69,3 +70,9 @@ class StorageKeyboardHandler:
         return [
             await self.buildKeyboard(items, page=page) for page in range(total_pages)
         ]
+
+    async def getItemData(self, item: StorageItem) -> list[str]:
+        if item.type == StorageItemTypes.VK_NPSD:
+            return [item.data["address"][-40:], item.data["coordinates"]]
+        else:
+            raise ValueError(f"Unknown type: {item.type}")

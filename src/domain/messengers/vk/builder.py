@@ -10,6 +10,7 @@ from src.domain.messengers.vk.useCases.commandsHandler import CommandsHandler
 from src.domain.messengers.vk.useCases.inlineStorage import InlineStorage
 from src.domain.messengers.vk.storageKeyboardHandler import StorageKeyboardHandler
 from src.libs.nspd.client import Client as NspdClient
+from src.domain.map.facade import Facade as MapFacade
 
 
 class Builder:
@@ -27,7 +28,11 @@ class Builder:
             await self.buildStorageKeyboardHandler(),
             await self.buildInlineStorage(),
             await self.buildNspdClient(),
+            await self.buildMapFacade(),
         )
+
+    async def buildMapFacade(self) -> MapFacade:
+        return MapFacade(self.context)
 
     # TODO: подумать...
     async def buildInlineStorage(self) -> InlineStorage:

@@ -15,6 +15,7 @@ from src.domain.messengers.vk.values.vkPayload import VkPayload
 from src.domain.messengers.vk.useCases.inlineStorage import InlineStorage
 from src.domain.messengers.vk.storageKeyboardHandler import StorageKeyboardHandler
 from src.libs.nspd.client import Client as NspdClient
+from src.domain.map.facade import Facade as MapFacade
 
 
 # Вот тут можно разбить обработку, но пока так
@@ -27,6 +28,7 @@ class UpdatesHandler:
         storageKeyboardHandler: StorageKeyboardHandler,
         inlineStorage: InlineStorage,
         nspdClient: NspdClient,
+        mapFacade: MapFacade,
     ):
         self.keyboard_builder = keyboard_builder
         self.state_repository = state_repository
@@ -34,6 +36,7 @@ class UpdatesHandler:
         self.storageKeyboardHandler = storageKeyboardHandler
         self.inlineStorage = inlineStorage
         self.nspdClient = nspdClient
+        self.mapFacade = mapFacade
 
     async def handleNewUpdate(self, update: Update) -> VkPayload:
         if update.type == UpdateType.MESSAGE_NEW:
@@ -45,7 +48,7 @@ class UpdatesHandler:
 
         return new_response
 
-    async def handleNewMessage(self, update: Update) -> SendMessage:
+    async def handleNewMessage(self, update: Update) -> VkPayload:
         data = update.getMessageNewUpdate()
         command = await self.commandsHandler.findCommand(data.message.text)
 
@@ -71,19 +74,26 @@ class UpdatesHandler:
 
     async def handleStateUpdate(
         self, state: State, text: str, user_uid: str
-    ) -> SendMessage:
+    ) -> EditMessage:
         if state.state == States.SEARCH_RADIATION:
-            response = await self.nspdClient.getGeoportalSearch(text)
-            # XXX:Вот тут будет запрос по адресу из переменной text
-            items = await self.inlineStorage.listTestItem()
+            if state.data is None:
+                raise ValueError("Message UID is None")
+            buildings = await self.mapFacade.listBuildings(text)
+            items = await self.inlineStorage.storeBuildings(
+                state.data["message_uid"], buildings
+            )
             keyboard = await self.storageKeyboardHandler.buildAllPages(items)
-            return SendMessage(
+            # TODO: подумать как обрабатывать если 0 результатов
+            message = EditMessage(
                 text="Выберите адрес для поиска радиации",
                 user_uid=user_uid,
                 keyboard=keyboard[0],
+                message_id=state.data["message_uid"],
             )
         else:
             raise ValueError(f"Unknown state: {state.state}")
+        await self.state_repository.deleteState(state)
+        return message
 
     async def handleMessageEvent(self, update: Update) -> EditMessage:
         data = update.getMessageEventUpdate()
@@ -114,7 +124,9 @@ class UpdatesHandler:
     async def handlePageMove(
         self, user_uid: str, response_uid: int, page: int
     ) -> EditMessage:
-        items = await self.inlineStorage.listTestItem()
+        items = await self.inlineStorage.getStorageItems(
+            MessangerTypes.VK, response_uid
+        )
         keyboard = await self.storageKeyboardHandler.buildAllPages(items)
         return EditMessage(
             # что будет если не передать текст?
@@ -137,6 +149,7 @@ class UpdatesHandler:
             user_uid=user_uid,
             state=States.SEARCH_RADIATION,
             messenger_type=MessangerTypes.VK,
+            data={"message_uid": response_uid},
         )
         await self.state_repository.persit(state)
         return response
