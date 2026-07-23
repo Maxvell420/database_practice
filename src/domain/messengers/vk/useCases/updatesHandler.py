@@ -82,12 +82,16 @@ class UpdatesHandler:
             items = await self.inlineStorage.storeBuildings(
                 state.data["message_uid"], buildings
             )
-            keyboard = await self.storageKeyboardHandler.buildAllPages(items)
+            pages = await self.storageKeyboardHandler.buildAllPages(items)
+            keyboard, addresses = pages[0]
             # TODO: подумать как обрабатывать если 0 результатов
+            text = "Выберите адрес для поиска радиации"
+            if addresses is not None:
+                text = f"{text}\n{addresses}"
             message = EditMessage(
-                text="Выберите адрес для поиска радиации",
+                text=text,
                 user_uid=user_uid,
-                keyboard=keyboard[0],
+                keyboard=keyboard,
                 message_id=state.data["message_uid"],
             )
         else:
@@ -127,13 +131,17 @@ class UpdatesHandler:
         items = await self.inlineStorage.getStorageItems(
             MessangerTypes.VK, response_uid
         )
-        keyboard = await self.storageKeyboardHandler.buildAllPages(items)
+        pages = await self.storageKeyboardHandler.buildAllPages(items)
+        keyboard, addresses = pages[page]
+        text = "Выберите адрес для поиска радиации"
+        if addresses is not None:
+            text = f"{text}\n{addresses}"
         return EditMessage(
             # что будет если не передать текст?
-            text="Выберите адрес для поиска радиации",
+            text=text,
             user_uid=user_uid,
             message_id=response_uid,
-            keyboard=keyboard[page],
+            keyboard=keyboard,
         )
 
     async def handleSearchRadiation(

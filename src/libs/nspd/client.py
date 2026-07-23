@@ -25,17 +25,18 @@ class Client:
     async def sendGetRequest(
         self, url: str, params: dict, verify: bool = False
     ) -> Response:
-        # response = await requests_async.get(
-        #     url,
-        #     params=params,
-        #     verify=verify,
-        #     headers={"Referer": "https://nspd.gov.ru/map?"},
-        # )
+        response = await requests_async.get(
+            url,
+            params=params,
+            verify=verify,
+            headers={"Referer": "https://nspd.gov.ru/map?"},
+        )
 
-        # await self.logger.info(f"Response: {response.text}")
-        # if response.status_code != 200:
-        #     await self.logger.error(
-        #         f"Error getting geoportal search: {response.status_code} {response.text}"
-        #     )
-        #     return Response(Result.ERROR, response.text)
-        return Response(Result.SUCCESS, json.loads(open("npsd.json").read()))
+        await self.logger.info(f"Response: {response.text}")
+        if response.status_code != 200:
+            await self.logger.error(
+                f"Error getting geoportal search: {response.status_code} {response.text}"
+            )
+            return Response(Result.ERROR, response.text)
+        return Response(Result.SUCCESS, response.json())
+        # return Response(Result.SUCCESS, json.loads(open("npsd.json").read()))
