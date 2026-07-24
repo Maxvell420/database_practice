@@ -1,9 +1,13 @@
 from src.domain.map.values.nasaPowerPoint import NasaPowerPoint
 from src.libs.infra.baseRepository import BaseRepository
 import json
+
+
 class NasaPowerRepository(BaseRepository):
 
-    async def getByGeohashAndDate(self, geohash: str, timestamp: float) -> NasaPowerPoint | None: 
+    async def findByGeohashAndDate(
+        self, geohash: str, timestamp: float
+    ) -> NasaPowerPoint | None:
         sql = """
             SELECT nasapower_geohashes_data.data
             FROM geohashes
@@ -17,14 +21,13 @@ class NasaPowerRepository(BaseRepository):
         """
 
         data = None
-        
+
         async with self.connection() as conn:
             row = await conn.fetchrow(sql, geohash, timestamp)
             if row is not None:
-                info = json.loads(row.get('data'))
+                info = json.loads(row.get("data"))
                 data = NasaPowerPoint(data=info)
-            
-                
+
         return data
 
     async def createGeohash(self, geohash: str) -> int:
@@ -68,5 +71,10 @@ class NasaPowerRepository(BaseRepository):
         """
         async with self.connection() as conn:
             await conn.execute(
-                sql, geohashId, data_type, timestamp_from, timestamp_to, data
+                sql,
+                geohashId,
+                data_type,
+                timestamp_from,
+                timestamp_to,
+                json.dumps(data),
             )

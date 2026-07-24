@@ -1,6 +1,7 @@
 from src.domain.messengers.vk.useCases.InlineKeyboardBuilder import (
     InlineKeyboardBuilder,
 )
+from src.domain.messengers.vk.values import sendMessage
 from src.domain.messengers.vk.values.sendMessage import SendMessage
 from src.domain.messengers.vk.values.editMessage import EditMessage
 from src.domain.messengers.vk.enums.actions import Actions
@@ -13,9 +14,12 @@ from src.libs.vk.responses.update import Update
 from src.libs.vk.enums.updateType import UpdateType
 from src.domain.messengers.vk.values.vkPayload import VkPayload
 from src.domain.messengers.vk.useCases.inlineStorage import InlineStorage
-from src.domain.messengers.vk.storageKeyboardHandler import StorageKeyboardHandler
+from src.domain.messengers.vk.useCases.storageKeyboardHandler import (
+    StorageKeyboardHandler,
+)
 from src.libs.nspd.client import Client as NspdClient
 from src.domain.map.facade import Facade as MapFacade
+import datetime
 
 
 # Вот тут можно разбить обработку, но пока так
@@ -99,7 +103,7 @@ class UpdatesHandler:
         await self.state_repository.deleteState(state)
         return message
 
-    async def handleMessageEvent(self, update: Update) -> EditMessage:
+    async def handleMessageEvent(self, update: Update) -> VkPayload:
         data = update.getMessageEventUpdate()
 
         if data.object.payload is None:
@@ -115,6 +119,10 @@ class UpdatesHandler:
         if data.object.payload.action == Actions.SEARCH_RADIATION:
             return await self.handleSearchRadiation(
                 str(data.object.user_id), data.object.conversation_message_id
+            )
+        elif data.object.payload.action == Actions.RADIATION_REQUEST:
+            return await self.handleRadiationRequest(
+                str(data.object.user_id), coordinates=data.object.payload.value or ""
             )
         elif data.object.payload.action == Actions.PAGE_MOVE:
             return await self.handlePageMove(
@@ -161,3 +169,16 @@ class UpdatesHandler:
         )
         await self.state_repository.persit(state)
         return response
+
+    async def handleRadiationRequest(
+        self, user_uid: str, coordinates: str
+    ) -> SendMessage:
+        latitude, longitude = coordinates.split(",")
+        time = datetime.datetime.now().timestamp()
+        data = await self.mapFacade.getRadiationByCoordinates(
+            float(latitude), float(longitude), time
+        )
+        return SendMessage(
+            text=data.getStringData(),
+            user_uid=user_uid,
+        )

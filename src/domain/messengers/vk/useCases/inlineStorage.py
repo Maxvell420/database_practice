@@ -32,7 +32,7 @@ class InlineStorage:
                     "type": StorageItemTypes.VK_NPSD,
                     "data": {
                         "address": building.address,
-                        "coordinates": building.coordinates,
+                        "coordinates": building.getStringCoordinates(),
                     },
                 }
             )
