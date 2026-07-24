@@ -8,7 +8,9 @@ from src.libs.infra.context import Context
 from src.domain.messengers.repositories.stateRepository import StateRepository
 from src.domain.messengers.vk.useCases.commandsHandler import CommandsHandler
 from src.domain.messengers.vk.useCases.inlineStorage import InlineStorage
-from src.domain.messengers.vk.storageKeyboardHandler import StorageKeyboardHandler
+from src.domain.messengers.vk.useCases.storageKeyboardHandler import (
+    StorageKeyboardHandler,
+)
 from src.libs.nspd.client import Client as NspdClient
 from src.domain.map.facade import Facade as MapFacade
 

@@ -20,7 +20,7 @@ class StorageKeyboardHandler:
     # TODO: как-то чувствуется что это не должно быть так
     def getActionByType(self, type: StorageItemTypes) -> Actions:
         if type == StorageItemTypes.VK_NPSD:
-            return Actions.SEARCH_RADIATION
+            return Actions.RADIATION_REQUEST
         else:
             raise ValueError(f"Unknown type: {type}")
 
